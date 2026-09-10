@@ -46,11 +46,25 @@ function GearIcon() {
   )
 }
 
+function LogoutIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M15 3.75H18a2.25 2.25 0 0 1 2.25 2.25v12a2.25 2.25 0 0 1-2.25 2.25h-3M9 15.75l-4.5-4.5m0 0L9 6.75m-4.5 4.5H16.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 export default function AiraSidebar({ active, onNavigate }) {
   const { savedNames } = useSavedNames()
 
   const items = [
-    { key: 'prediction-result', label: 'Eye Color', Icon: EyeIcon },
+    { key: 'eye-welcome', label: 'Eye Color', Icon: EyeIcon },
     { key: 'baby-names', label: 'Baby Names', Icon: StarIcon },
     // Only shown once the user has saved at least one name — removed again
     // automatically (this array is recomputed on every render) once empty.
@@ -60,6 +74,11 @@ export default function AiraSidebar({ active, onNavigate }) {
 
   return (
     <div className="fixed left-0 top-0 flex h-screen w-[76px] flex-col items-center gap-2 border-r border-border-default bg-surface py-xl">
+      <div className="relative mb-xl flex h-8 w-8 items-center justify-center rounded-[10px] bg-brand-primary text-sm font-bold text-on-brand">
+        A
+        <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-surface bg-success" />
+      </div>
+
       {items.map(({ key, label, Icon }) => (
         <button
           key={key}
@@ -67,13 +86,23 @@ export default function AiraSidebar({ active, onNavigate }) {
           onClick={() => onNavigate?.(key)}
           aria-label={label}
           title={label}
-          className={`flex h-10 w-10 items-center justify-center rounded-input transition-colors ${
+          className={`relative flex h-10 w-10 items-center justify-center rounded-input transition-colors ${
             active === key ? 'bg-bg-page text-brand-primary' : 'text-text-secondary hover:bg-bg-page'
           }`}
         >
+          {active === key && <span className="absolute -left-3 h-5 w-[3px] rounded-full bg-brand-primary" />}
           <Icon />
         </button>
       ))}
+
+      <div className="flex-1" />
+
+      <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-[10px] bg-unmet/40 text-xs font-bold text-text-primary">
+        AS
+      </div>
+      <button type="button" aria-label="Log out" title="Log out" className="flex h-10 w-10 items-center justify-center rounded-input text-text-secondary transition-colors hover:bg-bg-page">
+        <LogoutIcon />
+      </button>
     </div>
   )
 }

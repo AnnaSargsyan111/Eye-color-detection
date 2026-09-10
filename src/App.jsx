@@ -2,6 +2,7 @@ import { useState } from 'react'
 import CreateAccount from './screens/CreateAccount.jsx'
 import Login from './screens/Login.jsx'
 import ForgotPassword from './screens/ForgotPassword.jsx'
+import EyeColorWelcome from './screens/EyeColorWelcome.jsx'
 import PredictionResult from './screens/PredictionResult.jsx'
 import BabyNames from './screens/BabyNames.jsx'
 import SavedNames from './screens/SavedNames.jsx'
@@ -17,6 +18,7 @@ import { SavedNamesProvider } from './babyNames/SavedNamesContext.jsx'
 import { RecommendationProvider } from './babyNames/RecommendationContext.jsx'
 
 const HASH_SCREENS = {
+  '#eye-welcome': 'eye-welcome',
   '#prediction-result': 'prediction-result',
   '#baby-names': 'baby-names',
   '#saved-names': 'saved-names',
@@ -51,6 +53,9 @@ function AppScreens() {
     }
   }
 
+  if (screen === 'eye-welcome') {
+    return <EyeColorWelcome onNavigate={navigate} onStartPrediction={go('prediction-result')} />
+  }
   // Reachable directly via #prediction-result until the Parents/Grandparents
   // data-collection flow is built in this app — see SAMPLE_FAMILY_INPUT.
   if (screen === 'prediction-result') {

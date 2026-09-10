@@ -5,14 +5,14 @@
 @theme {
   --font-sans: "Inter", system-ui, sans-serif;
 
-  --color-bg-page: #F7F3EC;
+  --color-bg-page: #F7F8FD;
   --color-surface: #FFFFFF;
-  --color-text-primary: #252525;
-  --color-text-secondary: #6B6B6B;
-  --color-border-default: #D8D1C7;
-  --color-border-focus: #29483F;
-  --color-brand-primary: #3F3D9E;
-  --color-brand-primary-hover: #32317E;
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #475569;
+  --color-border-default: #E2E8F0;
+  --color-border-focus: #4338CA;
+  --color-brand-primary: #4338CA;
+  --color-brand-primary-hover: #3730A3;
   --color-on-brand: #FFFFFF;
   --color-error: #DC2626;
   --color-error-bg: #FEF2F2;
@@ -50,4 +50,29 @@
 
 body {
   font-family: var(--font-sans);
+}
+
+/* Eye Color Welcome screen: pupils take turns "glancing" — a 4s loop, one
+   eye moving per second (each Eyeball staggers this via animation-delay). */
+@keyframes eye-look {
+  0%, 15%, 100% {
+    transform: translate(0, 0);
+  }
+  4% {
+    transform: translate(-18%, -8%);
+  }
+  8% {
+    transform: translate(14%, 10%);
+  }
+  12% {
+    transform: translate(0, 0);
+  }
+}
+.animate-eye-look {
+  animation: eye-look 4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-eye-look {
+    animation: none;
+  }
 }
