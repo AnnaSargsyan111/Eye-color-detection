@@ -3,6 +3,7 @@ import TextField from '../components/TextField.jsx'
 import PasswordField from '../components/PasswordField.jsx'
 import PasswordRequirements, { PASSWORD_RULES } from '../components/PasswordRequirements.jsx'
 import Button from '../components/Button.jsx'
+import Logo from '../components/Logo.jsx'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const LATIN_NAME_RE = /^[A-Za-z\s'-]*$/
@@ -47,6 +48,7 @@ export default function CreateAccount({ onNavigateLogin }) {
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-bg-page p-xl font-sans">
+      <Logo />
       <form
         onSubmit={handleSubmit}
         className="flex w-full max-w-[440px] flex-col gap-xl rounded-card bg-surface p-xxxl shadow-[0_4px_24px_rgba(0,0,0,0.06)]"

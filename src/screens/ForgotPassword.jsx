@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import TextField from '../components/TextField.jsx'
 import Button from '../components/Button.jsx'
+import Logo from '../components/Logo.jsx'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -17,6 +18,7 @@ export default function ForgotPassword({ onNavigateLogin }) {
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-bg-page p-xl font-sans">
+      <Logo />
       <form
         onSubmit={handleSubmit}
         className="flex w-full max-w-[440px] flex-col gap-xl rounded-card bg-surface p-xxxl shadow-[0_4px_24px_rgba(0,0,0,0.06)]"
