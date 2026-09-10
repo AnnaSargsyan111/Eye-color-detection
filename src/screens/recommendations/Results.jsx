@@ -1,0 +1,104 @@
+import { useMemo, useState } from 'react'
+import RecommendationLayout from './RecommendationLayout.jsx'
+import RecommendationCard from './RecommendationCard.jsx'
+import ConfirmRemoveModal from '../../components/ConfirmRemoveModal.jsx'
+import Button from '../../components/Button.jsx'
+import { useRecommendationFlow } from '../../babyNames/RecommendationContext.jsx'
+import { useSavedNames } from '../../babyNames/SavedNamesContext.jsx'
+import { generateRecommendations } from '../../services/babyNames/index.js'
+
+const RELAXED_LABEL = { firstLetter: 'first letter', length: 'name length', popularity: 'popularity' }
+
+export default function Results({ onNavigate }) {
+  const { preferences, outcome, setOutcome } = useRecommendationFlow()
+  const { isSaved, saveName, removeName } = useSavedNames()
+  const [pendingRemove, setPendingRemove] = useState(null)
+
+  // Resilience: if this screen is reached without going through Loading
+  // (e.g. browser back/forward), compute the outcome on the spot instead of
+  // rendering blank.
+  const resolved = useMemo(() => {
+    if (outcome) return outcome
+    const computed = generateRecommendations(preferences)
+    setOutcome(computed)
+    return computed
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [outcome])
+
+  function toggleSave(record) {
+    if (isSaved(record)) {
+      setPendingRemove(record)
+    } else {
+      saveName(record)
+    }
+  }
+
+  const subtitle = resolved.insufficientData
+    ? undefined
+    : `${resolved.results.length} name${resolved.results.length === 1 ? '' : 's'} picked for you`
+
+  return (
+    <RecommendationLayout
+      step={null}
+      title="Your recommendations"
+      subtitle={subtitle}
+      onNavigate={onNavigate}
+      onBack={() => onNavigate('rec-6')}
+      hideFooter
+    >
+      {resolved.insufficientData ? (
+        <div className="flex flex-col items-center gap-4 rounded-card border border-border-default bg-surface p-xl text-center">
+          <p className="text-body text-text-primary">
+            We don't have enough matching names yet for these preferences.
+          </p>
+          <p className="text-caption text-text-secondary">
+            Try widening your popularity, length, or letter preference — or check back once more data is available for this location.
+          </p>
+          <Button variant="primary" onClick={() => onNavigate('rec-1')}>
+            Adjust preferences
+          </Button>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-lg">
+          {resolved.relaxedFilters.length > 0 && (
+            <p className="rounded-input bg-bg-page px-base py-md text-caption text-text-secondary">
+              We broadened {resolved.relaxedFilters.map((f) => RELAXED_LABEL[f]).join(', ')} to find enough matching names.
+            </p>
+          )}
+          <div className="flex flex-col gap-3">
+            {resolved.results.map((result) => {
+              const record = { name: result.name, sex: result.sex }
+              return (
+                <RecommendationCard
+                  key={result.name}
+                  result={result}
+                  style={preferences.style}
+                  saved={isSaved(record)}
+                  onToggleSave={() => toggleSave(record)}
+                />
+              )
+            })}
+          </div>
+
+          <div className="flex gap-3 pt-1">
+            <Button variant="secondary" className="flex-1" onClick={() => onNavigate('baby-names')}>
+              Start over
+            </Button>
+            <Button variant="primary" className="flex-1" onClick={() => onNavigate('rec-1')}>
+              Get recommendations
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <ConfirmRemoveModal
+        open={!!pendingRemove}
+        onCancel={() => setPendingRemove(null)}
+        onConfirm={() => {
+          removeName(pendingRemove)
+          setPendingRemove(null)
+        }}
+      />
+    </RecommendationLayout>
+  )
+}

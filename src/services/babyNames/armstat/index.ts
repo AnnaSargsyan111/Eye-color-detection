@@ -1,0 +1,7 @@
+export * from './types'
+export { normalizeNameKey, getCanonicalEnglishName, transliterateArmenian, CANONICAL_NAME_MAP } from './nameNormalization'
+export { parseJsonStat2Dataset } from './jsonStat'
+export { fetchArmStatDataset } from './client'
+export { fetchBabyNames } from './fetchBabyNames'
+export type { FetchBabyNamesConfig } from './fetchBabyNames'
+export { toBabyNameRecords } from './toBabyNameRecords'

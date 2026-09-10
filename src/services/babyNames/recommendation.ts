@@ -1,0 +1,201 @@
+// The centralized recommendation service. UI components call
+// generateRecommendations(preferences) and render the result — no scoring,
+// filtering, or weighting logic belongs in a component.
+
+import { getRecordsForSource } from './dataSources'
+import {
+  distinctivenessScore,
+  firstLetterFitScore,
+  lengthFitScore,
+  popularityFitScore,
+  stabilityScore,
+  trendScore,
+  type YearRank,
+} from './scoring'
+import {
+  computeEffectiveWeights,
+  MIN_RESULTS_BEFORE_RELAXING,
+  RELAXATION_ORDER,
+  TREND_WINDOW_YEARS,
+  UNRANKED_SENTINEL_RANK,
+} from './weights'
+import { localeForSource, firstLetter as firstLetterOf } from './textUtils'
+import type {
+  BabyNameRecord,
+  RecommendationOutcome,
+  RecommendationPreferences,
+  RecommendationResult,
+  RelaxableFilter,
+  ScoreBreakdown,
+} from './types'
+
+interface Candidate {
+  name: string
+  latest: BabyNameRecord
+  window: YearRank[]
+  realYearsPresent: number
+}
+
+function buildWindow(records: BabyNameRecord[], name: string, latestYear: number): { window: YearRank[]; realYearsPresent: number } {
+  const byYear = new Map(records.filter((r) => r.name === name).map((r) => [r.year, r]))
+  const window: YearRank[] = []
+  let realYearsPresent = 0
+  for (let y = latestYear - TREND_WINDOW_YEARS + 1; y <= latestYear; y++) {
+    const record = byYear.get(y)
+    if (record) {
+      window.push({ year: y, rank: record.rank, real: true })
+      realYearsPresent++
+    } else {
+      window.push({ year: y, rank: UNRANKED_SENTINEL_RANK, real: false })
+    }
+  }
+  return { window, realYearsPresent }
+}
+
+function buildCandidates(preferences: RecommendationPreferences): { candidates: Candidate[]; latestYear: number } | null {
+  const records = getRecordsForSource(preferences.source).filter((r) => r.sex === preferences.gender)
+  if (records.length === 0) return null
+
+  const latestYear = Math.max(...records.map((r) => r.year))
+  const latestRecords = records.filter((r) => r.year === latestYear)
+
+  const candidates = latestRecords.map((latest) => {
+    const { window, realYearsPresent } = buildWindow(records, latest.name, latestYear)
+    return { name: latest.name, latest, window, realYearsPresent }
+  })
+
+  return { candidates, latestYear }
+}
+
+interface ActiveFilters {
+  firstLetter: boolean
+  length: boolean
+  popularity: boolean
+}
+
+function passesFilters(candidate: Candidate, preferences: RecommendationPreferences, active: ActiveFilters): boolean {
+  if (active.firstLetter && preferences.firstLetter) {
+    const locale = localeForSource(preferences.source)
+    if (firstLetterOf(candidate.name, locale) !== preferences.firstLetter.toLocaleUpperCase(locale)) return false
+  }
+  if (active.length && preferences.length !== 'any') {
+    if (lengthFitScore(candidate.name, preferences.length) < 1) return false
+  }
+  if (active.popularity && preferences.popularity !== 'any') {
+    if (popularityFitScore(candidate.latest.rank, preferences.popularity) < 1) return false
+  }
+  return true
+}
+
+function scoreCandidate(
+  candidate: Candidate,
+  preferences: RecommendationPreferences,
+  active: ActiveFilters,
+  weights: ScoreBreakdown
+): { result: RecommendationResult; total: number } {
+  const breakdown: ScoreBreakdown = {
+    popularityFit: popularityFitScore(candidate.latest.rank, active.popularity ? preferences.popularity : 'any'),
+    trend: trendScore(candidate.window),
+    stability: stabilityScore(candidate.window, candidate.latest.rank),
+    distinctiveness: distinctivenessScore(candidate.latest.rank, candidate.realYearsPresent),
+    lengthFit: lengthFitScore(candidate.name, active.length ? preferences.length : 'any'),
+    firstLetterFit: firstLetterFitScore(candidate.name, active.firstLetter ? preferences.firstLetter : undefined, preferences.source),
+  }
+
+  const total =
+    breakdown.popularityFit * weights.popularityFit +
+    breakdown.trend * weights.trend +
+    breakdown.stability * weights.stability +
+    breakdown.distinctiveness * weights.distinctiveness +
+    breakdown.lengthFit * weights.lengthFit +
+    breakdown.firstLetterFit * weights.firstLetterFit
+
+  const sexLabel = preferences.gender === 'female' ? 'girls' : 'boys'
+  const explanation = explain(preferences.style, breakdown, candidate.latest.rank, sexLabel, candidate.latest.year)
+
+  return {
+    result: {
+      name: candidate.name,
+      sex: candidate.latest.sex,
+      source: candidate.latest.source,
+      latestYear: candidate.latest.year,
+      latestRank: candidate.latest.rank,
+      latestCount: candidate.latest.count,
+      score: total,
+      breakdown,
+      explanation,
+    },
+    total,
+  }
+}
+
+function explain(
+  style: RecommendationPreferences['style'],
+  breakdown: ScoreBreakdown,
+  rank: number,
+  sexLabel: string,
+  year: number
+): string {
+  const rankLine = `Rank #${rank} for ${sexLabel} in ${year}.`
+  const reasonFor = (key: 'trend' | 'stability' | 'distinctiveness') =>
+    key === 'trend'
+      ? 'Popularity has increased over recent years.'
+      : key === 'stability'
+        ? 'Popularity has remained consistently strong across recent years.'
+        : 'Less common than the most popular names in the latest data.'
+
+  if (style === 'trending') return `${reasonFor('trend')} ${rankLine}`
+  if (style === 'timeless') return `${reasonFor('stability')} ${rankLine}`
+  if (style === 'distinctive') return `${reasonFor('distinctiveness')} ${rankLine}`
+
+  const strongest = (['trend', 'stability', 'distinctiveness'] as const).reduce((best, key) =>
+    breakdown[key] > breakdown[best] ? key : best
+  )
+  return `${reasonFor(strongest)} ${rankLine}`
+}
+
+/**
+ * Runs the full pipeline described in the product spec: candidate names for
+ * source+gender+latest year -> hard filters (relaxed in RELAXATION_ORDER
+ * when too restrictive) -> weighted scoring -> top 10. Never invents a name;
+ * returns `insufficientData: true` when the source has no records at all.
+ */
+export function generateRecommendations(preferences: RecommendationPreferences): RecommendationOutcome {
+  const built = buildCandidates(preferences)
+  if (!built || built.candidates.length === 0) {
+    return { preferences, results: [], relaxedFilters: [], insufficientData: true, latestYear: null }
+  }
+  const { candidates, latestYear } = built
+
+  const active: ActiveFilters = {
+    firstLetter: Boolean(preferences.firstLetter),
+    length: preferences.length !== 'any',
+    popularity: preferences.popularity !== 'any',
+  }
+
+  let filtered = candidates.filter((c) => passesFilters(c, preferences, active))
+  const relaxedFilters: RelaxableFilter[] = []
+
+  for (const key of RELAXATION_ORDER) {
+    if (filtered.length >= MIN_RESULTS_BEFORE_RELAXING) break
+    if (!active[key]) continue
+    active[key] = false
+    relaxedFilters.push(key)
+    filtered = candidates.filter((c) => passesFilters(c, preferences, active))
+  }
+
+  const weights = computeEffectiveWeights(preferences.style, preferences.adventure)
+  const scored = filtered
+    .map((c) => scoreCandidate(c, preferences, active, weights))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, MIN_RESULTS_BEFORE_RELAXING)
+    .map((s) => s.result)
+
+  return {
+    preferences,
+    results: scored,
+    relaxedFilters,
+    insufficientData: scored.length === 0,
+    latestYear,
+  }
+}
