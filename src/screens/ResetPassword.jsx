@@ -34,8 +34,12 @@ export default function ResetPassword({ onReset }) {
           <PasswordField
             label="New Password"
             placeholder="Enter a new password"
+            autoComplete="new-password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value)
+              setErrors((prev) => (prev.password ? { ...prev, password: '' } : prev))
+            }}
             error={errors.password}
           />
           <PasswordRequirements value={password} />
@@ -44,8 +48,12 @@ export default function ResetPassword({ onReset }) {
         <PasswordField
           label="Confirm Password"
           placeholder="Re-enter your password"
+          autoComplete="new-password"
           value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
+          onChange={(e) => {
+            setConfirm(e.target.value)
+            setErrors((prev) => (prev.confirm ? { ...prev, confirm: '' } : prev))
+          }}
           error={errors.confirm}
         />
 

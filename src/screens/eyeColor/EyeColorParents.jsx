@@ -8,7 +8,10 @@ export default function EyeColorParents({ onNavigate }) {
   const [errors, setErrors] = useState({})
 
   function update(role) {
-    return (color) => setParent(role, color ? { eyeColor: color } : null)
+    return (color) => {
+      setParent(role, color ? { eyeColor: color } : null)
+      setErrors((prev) => (prev[role] ? { ...prev, [role]: '' } : prev))
+    }
   }
 
   function handleContinue() {

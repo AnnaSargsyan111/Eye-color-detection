@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import RecommendationLayout from './RecommendationLayout.jsx'
 import OptionCard from './OptionCard.jsx'
 import { useRecommendationFlow } from '../../babyNames/RecommendationContext.jsx'
@@ -11,6 +12,20 @@ const OPTIONS = [
 
 export default function Step4({ onNavigate }) {
   const { preferences, update } = useRecommendationFlow()
+  const [error, setError] = useState('')
+
+  function select(value) {
+    update({ length: value })
+    setError('')
+  }
+
+  function handleContinue() {
+    if (!preferences.length) {
+      setError('Select an option to continue')
+      return
+    }
+    onNavigate('rec-5')
+  }
 
   return (
     <RecommendationLayout
@@ -18,7 +33,8 @@ export default function Step4({ onNavigate }) {
       title="How long should the name be?"
       onNavigate={onNavigate}
       onBack={() => onNavigate('rec-3')}
-      onContinue={() => onNavigate('rec-5')}
+      onContinue={handleContinue}
+      footerError={error}
     >
       <div className="flex flex-col gap-3">
         {OPTIONS.map((opt) => (
@@ -27,7 +43,7 @@ export default function Step4({ onNavigate }) {
             title={opt.title}
             description={opt.description}
             selected={preferences.length === opt.value}
-            onSelect={() => update({ length: opt.value })}
+            onSelect={() => select(opt.value)}
           />
         ))}
       </div>

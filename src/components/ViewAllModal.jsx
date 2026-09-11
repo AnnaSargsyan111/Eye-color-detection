@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 
 // Shared "View all" modal shell — header with title + close, scrollable body.
 // Matches the ConfirmRemoveModal conventions (backdrop-click closes, body scroll-locked).
-export default function ViewAllModal({ open, title, onClose, children }) {
+export default function ViewAllModal({ open, title, onClose, headerAction, children }) {
   useEffect(() => {
     if (!open) return
     const original = document.body.style.overflow
@@ -24,9 +24,12 @@ export default function ViewAllModal({ open, title, onClose, children }) {
           <h2 className="text-h1 font-semibold text-text-primary" style={{ fontSize: 18 }}>
             {title}
           </h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="text-xl leading-none text-text-secondary">
-            ×
-          </button>
+          <div className="flex items-center gap-3">
+            {headerAction}
+            <button type="button" onClick={onClose} aria-label="Close" className="text-xl leading-none text-text-secondary">
+              ×
+            </button>
+          </div>
         </div>
         <div className="flex flex-col gap-2 overflow-y-auto">{children}</div>
       </div>

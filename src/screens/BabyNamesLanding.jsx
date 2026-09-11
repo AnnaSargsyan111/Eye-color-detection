@@ -1,4 +1,5 @@
 import AiraSidebar from '../components/AiraSidebar.jsx'
+import MobileTopBar from '../components/MobileTopBar.jsx'
 import Button from '../components/Button.jsx'
 import { useRecommendationFlow } from '../babyNames/RecommendationContext.jsx'
 
@@ -31,12 +32,8 @@ export default function BabyNamesLanding({ onNavigate }) {
 
   return (
     <div className="min-h-screen w-full bg-bg-page font-sans">
-      <div className="hidden md:block">
-        <AiraSidebar active="baby-names" onNavigate={onNavigate} />
-      </div>
-      <div className="flex items-center gap-3 border-b border-border-default bg-surface px-base py-md md:hidden">
-        <span className="text-label font-semibold text-text-primary">Baby Names</span>
-      </div>
+      <AiraSidebar active="baby-names" onNavigate={onNavigate} />
+      <MobileTopBar title="Baby Names" />
 
       <div className="flex min-h-screen flex-col items-center justify-center p-xl md:ml-[76px]">
         <div className="flex w-full max-w-[560px] flex-col gap-lg">
@@ -62,7 +59,7 @@ export default function BabyNamesLanding({ onNavigate }) {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2">
+              <div className="ml-lg flex flex-col gap-2">
                 <span className="text-caption font-medium text-text-secondary">Location</span>
                 <div className="flex gap-2">
                   {LOCATIONS.map((loc) => (
@@ -74,7 +71,7 @@ export default function BabyNamesLanding({ onNavigate }) {
               </div>
             </div>
 
-            <Button variant="primary" onClick={() => onNavigate('baby-names-loading')}>
+            <Button variant="primary" className="mt-[52px]" onClick={() => onNavigate('baby-names-loading')}>
               Explore names →
             </Button>
           </div>

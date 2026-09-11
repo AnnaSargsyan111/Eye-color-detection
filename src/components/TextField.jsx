@@ -10,7 +10,7 @@ export default function TextField({ label, error, className = '', ...props }) {
       </label>
       <input
         id={id}
-        className={`w-full rounded-input border px-base py-md text-body text-text-primary placeholder:text-text-secondary bg-surface outline-none transition-colors focus:border-[1.5px] focus:border-border-focus ${
+        className={`w-full rounded-input border px-base py-md text-body text-text-primary placeholder:text-text-secondary bg-surface outline-none transition-colors focus:border-[1.5px] focus:border-border-focus disabled:cursor-not-allowed disabled:border-border-default disabled:bg-bg-page disabled:text-text-secondary ${
           error ? 'border-error' : 'border-border-default'
         }`}
         {...props}

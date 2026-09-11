@@ -1,7 +1,14 @@
 import { useEffect } from 'react'
 import Button from './Button.jsx'
 
-export default function ConfirmRemoveModal({ open, onCancel, onConfirm }) {
+export default function ConfirmRemoveModal({
+  open,
+  onCancel,
+  onConfirm,
+  title = 'Remove saved name?',
+  message = 'Are you sure you want to remove this name from your saved names?',
+  confirmLabel = 'Remove',
+}) {
   // Prevent the underlying page from scrolling while the modal is open.
   useEffect(() => {
     if (!open) return
@@ -25,21 +32,19 @@ export default function ConfirmRemoveModal({ open, onCancel, onConfirm }) {
       >
         <div className="flex items-start justify-between gap-4">
           <h2 className="text-h1 font-semibold text-text-primary" style={{ fontSize: 20 }}>
-            Remove saved name?
+            {title}
           </h2>
           <button onClick={onCancel} aria-label="Close" className="text-xl leading-none text-text-secondary">
             ×
           </button>
         </div>
-        <p className="mt-2 text-body text-text-secondary">
-          Are you sure you want to remove this name from your saved names?
-        </p>
+        <p className="mt-2 text-body text-text-secondary">{message}</p>
         <div className="mt-xl flex gap-3">
           <Button variant="secondary" className="flex-1" onClick={onCancel}>
             Cancel
           </Button>
           <Button variant="primary" className="flex-1" onClick={onConfirm}>
-            Remove
+            {confirmLabel}
           </Button>
         </div>
       </div>

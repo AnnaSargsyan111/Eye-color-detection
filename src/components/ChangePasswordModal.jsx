@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import PasswordField from './PasswordField.jsx'
+import PasswordRequirements, { PASSWORD_RULES } from './PasswordRequirements.jsx'
 import Button from './Button.jsx'
 
 export default function ChangePasswordModal({ open, onCancel, onSaved }) {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
-  const [error, setError] = useState('')
+  const [errors, setErrors] = useState({})
 
   useEffect(() => {
     if (!open) return
@@ -20,7 +21,7 @@ export default function ChangePasswordModal({ open, onCancel, onSaved }) {
     if (open) {
       setPassword('')
       setConfirm('')
-      setError('')
+      setErrors({})
     }
   }, [open])
 
@@ -28,14 +29,13 @@ export default function ChangePasswordModal({ open, onCancel, onSaved }) {
 
   function handleSave(e) {
     e.preventDefault()
-    if (!password || !confirm) {
-      setError('Both fields are required')
-      return
-    }
-    if (password !== confirm) {
-      setError('Passwords do not match')
-      return
-    }
+    const next = {}
+    if (!password) next.password = 'This field is required'
+    else if (!PASSWORD_RULES.every((r) => r.test(password))) next.password = 'Password does not meet all requirements'
+    if (!confirm) next.confirm = 'This field is required'
+    else if (password && confirm !== password) next.confirm = 'Passwords do not match'
+    setErrors(next)
+    if (Object.keys(next).length > 0) return
     onSaved()
   }
 
@@ -43,6 +43,7 @@ export default function ChangePasswordModal({ open, onCancel, onSaved }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-base" onClick={onCancel}>
       <form
         onSubmit={handleSave}
+        noValidate
         className="w-full max-w-[420px] rounded-card bg-surface p-xl shadow-[0_12px_32px_rgba(0,0,0,0.18)]"
         onClick={(e) => e.stopPropagation()}
       >
@@ -56,18 +57,33 @@ export default function ChangePasswordModal({ open, onCancel, onSaved }) {
         </div>
 
         <div className="mt-lg flex flex-col gap-base">
-          <PasswordField
-            label="New Password"
-            placeholder="Enter new password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div className="flex flex-col gap-base">
+            <PasswordField
+              label="New Password"
+              placeholder="Enter new password"
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => {
+                const value = e.target.value
+                setPassword(value)
+                setErrors((prev) => (prev.password ? { ...prev, password: '' } : prev))
+              }}
+              error={errors.password}
+            />
+            <PasswordRequirements value={password} />
+          </div>
+
           <PasswordField
             label="Confirm Password"
             placeholder="Re-enter new password"
+            autoComplete="new-password"
             value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            error={error}
+            onChange={(e) => {
+              const value = e.target.value
+              setConfirm(value)
+              setErrors((prev) => (prev.confirm ? { ...prev, confirm: '' } : prev))
+            }}
+            error={errors.confirm}
           />
         </div>
 

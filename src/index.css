@@ -52,20 +52,34 @@ body {
   font-family: var(--font-sans);
 }
 
+/* Browser autofill (Chrome/Edge/Safari) otherwise paints its own yellow/blue
+   background on just the <input>, which looks inconsistent field-to-field
+   (e.g. an autofilled email field vs. an autofilled password field sitting in
+   a wrapper div). Force it back to the app's own surface color everywhere. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-text-primary);
+  -webkit-box-shadow: 0 0 0px 1000px var(--color-surface) inset;
+  box-shadow: 0 0 0px 1000px var(--color-surface) inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 /* Eye Color Welcome screen: pupils take turns "glancing" — a 4s loop, one
-   eye moving per second (each Eyeball staggers this via animation-delay). */
+   eye moving AND rotating per second (each Eyeball staggers this via
+   animation-delay, so they take their turn one after another). */
 @keyframes eye-look {
   0%, 15%, 100% {
-    transform: translate(0, 0);
+    transform: translate(0, 0) rotate(0deg);
   }
   4% {
-    transform: translate(-18%, -8%);
+    transform: translate(-18%, -8%) rotate(-14deg);
   }
   8% {
-    transform: translate(14%, 10%);
+    transform: translate(14%, 10%) rotate(12deg);
   }
   12% {
-    transform: translate(0, 0);
+    transform: translate(0, 0) rotate(0deg);
   }
 }
 .animate-eye-look {

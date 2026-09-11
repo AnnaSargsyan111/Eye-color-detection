@@ -95,16 +95,14 @@ export function getTopNamesForSource(source: Source, sex: Sex, limit = 100): Bab
     .sort((a, b) => a.rank - b.rank)
 }
 
-/** Searches by substring within one source (both sexes), one entry per name+sex using its most recent year. */
-export function searchNamesForSource(source: Source, query: string, limit = 20): BabyNameRecord[] {
+/**
+ * Searches by substring within one source, scoped to a single sex's top-N
+ * list (the same list getTopNamesForSource returns) — never mixes in the
+ * other sex's names, and never reaches past that list into other years or
+ * lower-ranked names.
+ */
+export function searchNamesForSource(source: Source, sex: Sex, query: string, topLimit = 100): BabyNameRecord[] {
   const needle = query.trim().toLowerCase()
   if (!needle) return []
-  const latestByNameSex = new Map<string, BabyNameRecord>()
-  for (const r of getRecordsForSource(source)) {
-    if (!r.name.toLowerCase().includes(needle)) continue
-    const key = `${r.name}|${r.sex}`
-    const existing = latestByNameSex.get(key)
-    if (!existing || r.year > existing.year) latestByNameSex.set(key, r)
-  }
-  return [...latestByNameSex.values()].sort((a, b) => a.rank - b.rank).slice(0, limit)
+  return getTopNamesForSource(source, sex, topLimit).filter((r) => r.name.toLowerCase().includes(needle))
 }

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import RecommendationLayout from './RecommendationLayout.jsx'
 import OptionCard from './OptionCard.jsx'
 import { useRecommendationFlow } from '../../babyNames/RecommendationContext.jsx'
@@ -15,6 +16,20 @@ const GENDERS = [
 
 export default function Step1({ onNavigate }) {
   const { preferences, update, resetFlow } = useRecommendationFlow()
+  const [error, setError] = useState('')
+
+  function select(patch) {
+    update(patch)
+    setError('')
+  }
+
+  function handleContinue() {
+    if (!preferences.source || !preferences.gender) {
+      setError('Select an option to continue')
+      return
+    }
+    onNavigate('rec-2')
+  }
 
   return (
     <RecommendationLayout
@@ -25,9 +40,9 @@ export default function Step1({ onNavigate }) {
         resetFlow()
         onNavigate('baby-names')
       }}
-      onContinue={() => onNavigate('rec-2')}
+      onContinue={handleContinue}
       continueLabel="Continue →"
-      continueDisabled={!preferences.source || !preferences.gender}
+      footerError={error}
     >
       <div className="flex flex-col gap-md">
         <span className="text-label font-medium text-text-primary">Location</span>
@@ -37,7 +52,7 @@ export default function Step1({ onNavigate }) {
               key={loc.value}
               title={loc.label}
               selected={preferences.source === loc.value}
-              onSelect={() => update({ source: loc.value })}
+              onSelect={() => select({ source: loc.value })}
             />
           ))}
         </div>
@@ -51,7 +66,7 @@ export default function Step1({ onNavigate }) {
               key={g.value}
               title={g.label}
               selected={preferences.gender === g.value}
-              onSelect={() => update({ gender: g.value })}
+              onSelect={() => select({ gender: g.value })}
             />
           ))}
         </div>

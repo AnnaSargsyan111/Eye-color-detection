@@ -11,7 +11,11 @@ export default function Login({ onNavigateSignup, onNavigateForgotPassword, onLo
   const [errors, setErrors] = useState({})
 
   function update(field) {
-    return (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
+    return (e) => {
+      const value = e.target.value
+      setForm((f) => ({ ...f, [field]: value }))
+      setErrors((prev) => (prev[field] ? { ...prev, [field]: '' } : prev))
+    }
   }
 
   function handleSubmit(e) {
@@ -32,6 +36,7 @@ export default function Login({ onNavigateSignup, onNavigateForgotPassword, onLo
       <Logo />
       <form
         onSubmit={handleSubmit}
+        noValidate
         className="flex w-full max-w-[440px] flex-col gap-xl rounded-card bg-surface p-xxxl shadow-[0_4px_24px_rgba(0,0,0,0.06)]"
       >
         <h1 className="text-center text-h1 font-semibold text-text-primary">Log in to your account</h1>
@@ -39,6 +44,7 @@ export default function Login({ onNavigateSignup, onNavigateForgotPassword, onLo
         <TextField
           label="Email address"
           type="email"
+          autoComplete="email"
           placeholder="Type your email address"
           value={form.email}
           onChange={update('email')}
@@ -47,6 +53,7 @@ export default function Login({ onNavigateSignup, onNavigateForgotPassword, onLo
 
         <PasswordField
           label="Password"
+          autoComplete="current-password"
           placeholder="Type your password"
           value={form.password}
           onChange={update('password')}

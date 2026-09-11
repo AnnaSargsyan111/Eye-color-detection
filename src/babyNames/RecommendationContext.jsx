@@ -2,11 +2,15 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 import { ensureArmStatLoaded } from '../services/babyNames/index.js'
 
 const DEFAULTS = {
+  // Baby Names landing pre-selects Girl/International so Explore is always
+  // clickable there. Popularity/style/length stay unselected — Steps 2-4
+  // still require an explicit pick (validated on click; see
+  // RecommendationLayout's footerError).
   source: 'ons_england_wales',
   gender: 'female',
-  popularity: 'any',
-  style: 'mixed',
-  length: 'any',
+  popularity: null,
+  style: null,
+  length: null,
   adventure: 'balanced',
   firstLetter: undefined,
 }

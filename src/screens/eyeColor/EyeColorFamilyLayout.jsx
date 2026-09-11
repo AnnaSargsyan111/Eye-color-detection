@@ -1,4 +1,5 @@
 import AiraSidebar from '../../components/AiraSidebar.jsx'
+import MobileTopBar from '../../components/MobileTopBar.jsx'
 import FamilyProgressStepper from '../../components/FamilyProgressStepper.jsx'
 import Button from '../../components/Button.jsx'
 
@@ -16,16 +17,8 @@ export default function EyeColorFamilyLayout({
 }) {
   return (
     <div className="min-h-screen w-full bg-bg-page font-sans">
-      <div className="hidden md:block">
-        <AiraSidebar active="eye-welcome" onNavigate={onNavigate} />
-      </div>
-
-      <div className="flex items-center gap-3 border-b border-border-default bg-surface px-base py-md md:hidden">
-        <button type="button" onClick={onBack} aria-label="Back" className="text-lg text-text-secondary">
-          ←
-        </button>
-        <span className="text-label font-semibold text-text-primary">Eye Color</span>
-      </div>
+      <AiraSidebar active="eye-welcome" onNavigate={onNavigate} />
+      <MobileTopBar title="Eye Color" onBack={onBack} />
 
       <div className="flex flex-col items-center px-base py-xl md:ml-[76px] md:px-xl">
         <div className="flex w-full max-w-[880px] flex-col items-center gap-xl pb-16">

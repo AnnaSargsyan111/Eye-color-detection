@@ -19,7 +19,13 @@ export default function CreateAccount({ onNavigateLogin, onCreated }) {
   const [errors, setErrors] = useState({})
 
   function update(field) {
-    return (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
+    return (e) => {
+      const value = e.target.value
+      setForm((f) => ({ ...f, [field]: value }))
+      // Clear a stale error as soon as the user starts fixing it, rather than
+      // leaving e.g. "This field is required" visible after they've already typed something.
+      setErrors((prev) => (prev[field] ? { ...prev, [field]: '' } : prev))
+    }
   }
 
   function updateName(field) {
@@ -47,7 +53,8 @@ export default function CreateAccount({ onNavigateLogin, onCreated }) {
     // A real submit would create the account via an API here. There's no
     // backend in this project, so a validation-clean submit just proceeds
     // straight into the app, same as a real signup would after success.
-    if (Object.keys(next).length === 0) onCreated?.(`${form.firstName} ${form.lastName}`.trim())
+    if (Object.keys(next).length === 0)
+      onCreated?.({ firstName: form.firstName, lastName: form.lastName, email: form.email })
   }
 
   return (
@@ -55,6 +62,8 @@ export default function CreateAccount({ onNavigateLogin, onCreated }) {
       <Logo />
       <form
         onSubmit={handleSubmit}
+        noValidate
+        autoComplete="off"
         className="flex w-full max-w-[440px] flex-col gap-xl rounded-card bg-surface p-xxxl shadow-[0_4px_24px_rgba(0,0,0,0.06)]"
       >
         <h1 className="text-h1 font-semibold text-text-primary">Create Account</h1>
@@ -63,6 +72,7 @@ export default function CreateAccount({ onNavigateLogin, onCreated }) {
           <TextField
             label="First Name"
             placeholder="First name"
+            autoComplete="off"
             value={form.firstName}
             onChange={updateName('firstName')}
             error={errors.firstName}
@@ -71,6 +81,7 @@ export default function CreateAccount({ onNavigateLogin, onCreated }) {
           <TextField
             label="Last Name"
             placeholder="Last name"
+            autoComplete="off"
             value={form.lastName}
             onChange={updateName('lastName')}
             error={errors.lastName}
@@ -81,6 +92,7 @@ export default function CreateAccount({ onNavigateLogin, onCreated }) {
         <TextField
           label="Email"
           type="email"
+          autoComplete="off"
           placeholder="you@example.com"
           value={form.email}
           onChange={update('email')}
@@ -90,6 +102,7 @@ export default function CreateAccount({ onNavigateLogin, onCreated }) {
         <div className="flex flex-col gap-base">
           <PasswordField
             label="Password"
+            autoComplete="new-password"
             placeholder="Create a password"
             value={form.password}
             onChange={update('password')}

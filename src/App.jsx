@@ -26,6 +26,8 @@ import RecommendationsResults from './screens/recommendations/Results.jsx'
 import { SavedNamesProvider } from './babyNames/SavedNamesContext.jsx'
 import { RecommendationProvider } from './babyNames/RecommendationContext.jsx'
 import { FamilyInputProvider, useFamilyInput } from './eyeColorPrediction/FamilyInputContext.jsx'
+import { AccountProvider, useAccount } from './account/AccountContext.jsx'
+import { SidebarMenuProvider } from './components/SidebarMenuContext.jsx'
 
 const HASH_SCREENS = {
   '#eye-welcome': 'eye-welcome',
@@ -52,9 +54,9 @@ function AppScreens() {
   const [screen, setScreen] = useState(
     (typeof window !== 'undefined' && HASH_SCREENS[window.location.hash]) || 'create-account'
   )
-  const [userName, setUserName] = useState('Anna Sargsyan')
   const [greeting, setGreeting] = useState('Welcome back')
   const familyInput = useFamilyInput()
+  const { fullName: userName, setAccount } = useAccount()
 
   function navigate(target) {
     setScreen(target)
@@ -67,8 +69,8 @@ function AppScreens() {
     }
   }
 
-  function handleCreated(fullName) {
-    if (fullName) setUserName(fullName)
+  function handleCreated(account) {
+    if (account) setAccount(account)
     setGreeting('Welcome')
     navigate('eye-welcome')
   }
@@ -105,7 +107,7 @@ function AppScreens() {
     return (
       <PredictionResult
         familyInput={familyInput.toFamilyInput() ?? SAMPLE_FAMILY_INPUT}
-        onStartOver={go('create-account')}
+        onStartOver={go('eye-welcome')}
         onGetBabyNames={go('baby-names')}
       />
     )
@@ -159,12 +161,16 @@ function AppScreens() {
 
 export default function App() {
   return (
-    <SavedNamesProvider>
-      <RecommendationProvider>
-        <FamilyInputProvider>
-          <AppScreens />
-        </FamilyInputProvider>
-      </RecommendationProvider>
-    </SavedNamesProvider>
+    <AccountProvider>
+      <SavedNamesProvider>
+        <RecommendationProvider>
+          <FamilyInputProvider>
+            <SidebarMenuProvider>
+              <AppScreens />
+            </SidebarMenuProvider>
+          </FamilyInputProvider>
+        </RecommendationProvider>
+      </SavedNamesProvider>
+    </AccountProvider>
   )
 }

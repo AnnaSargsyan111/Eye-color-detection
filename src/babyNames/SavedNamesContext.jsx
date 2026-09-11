@@ -38,8 +38,12 @@ export function SavedNamesProvider({ children }) {
     setSavedNames((prev) => prev.filter((n) => keyFor(n) !== keyFor(record)))
   }, [])
 
+  const removeAllNames = useCallback(() => {
+    setSavedNames([])
+  }, [])
+
   return (
-    <SavedNamesContext.Provider value={{ savedNames, isSaved, saveName, removeName }}>
+    <SavedNamesContext.Provider value={{ savedNames, isSaved, saveName, removeName, removeAllNames }}>
       {children}
     </SavedNamesContext.Provider>
   )

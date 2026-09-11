@@ -1,36 +1,47 @@
 import { useState } from 'react'
 import AiraSidebar from '../components/AiraSidebar.jsx'
+import MobileTopBar from '../components/MobileTopBar.jsx'
 import TextField from '../components/TextField.jsx'
 import Button from '../components/Button.jsx'
 import ChangePasswordModal from '../components/ChangePasswordModal.jsx'
 import Toast from '../components/Toast.jsx'
+import { useAccount } from '../account/AccountContext.jsx'
 
 export default function Settings({ onNavigate }) {
-  const [form, setForm] = useState({ firstName: 'Anna', lastName: 'Sargsyan', email: 'anna.sargsyan@example.com' })
+  const { account, setAccount } = useAccount()
+  const [form, setForm] = useState(account)
+  const [errors, setErrors] = useState({})
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [toastMessage, setToastMessage] = useState(null)
 
   function update(field) {
-    return (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
+    return (e) => {
+      const value = e.target.value
+      setForm((f) => ({ ...f, [field]: value }))
+      setErrors((prev) => (prev[field] ? { ...prev, [field]: '' } : prev))
+    }
   }
 
   function handleSave(e) {
     e.preventDefault()
+    const next = {}
+    if (!form.firstName) next.firstName = 'This field is required'
+    if (!form.lastName) next.lastName = 'This field is required'
+    setErrors(next)
+    if (Object.keys(next).length > 0) return
+    setAccount(form)
     setToastMessage('Changes saved')
   }
 
   return (
     <div className="min-h-screen w-full bg-bg-page font-sans">
-      <div className="hidden md:block">
-        <AiraSidebar active="settings" onNavigate={onNavigate} />
-      </div>
-      <div className="flex items-center gap-3 border-b border-border-default bg-surface px-base py-md md:hidden">
-        <span className="text-label font-semibold text-text-primary">Settings</span>
-      </div>
+      <AiraSidebar active="settings" onNavigate={onNavigate} />
+      <MobileTopBar title="Settings" />
 
       <div className="flex flex-col items-center p-xl md:ml-[76px]">
         <form
           onSubmit={handleSave}
+          noValidate
           className="flex w-full max-w-[560px] flex-col gap-xl rounded-card border border-border-default bg-surface p-xxl"
         >
           <div className="flex flex-col gap-1">
@@ -41,11 +52,30 @@ export default function Settings({ onNavigate }) {
           </div>
 
           <div className="flex flex-col gap-base sm:flex-row">
-            <TextField label="First Name" value={form.firstName} onChange={update('firstName')} className="flex-1" />
-            <TextField label="Last Name" value={form.lastName} onChange={update('lastName')} className="flex-1" />
+            <TextField
+              label="First Name"
+              value={form.firstName}
+              onChange={update('firstName')}
+              error={errors.firstName}
+              className="flex-1"
+            />
+            <TextField
+              label="Last Name"
+              value={form.lastName}
+              onChange={update('lastName')}
+              error={errors.lastName}
+              className="flex-1"
+            />
           </div>
 
-          <TextField label="Email" type="email" value={form.email} onChange={update('email')} />
+          <TextField
+            label="Email"
+            type="email"
+            value={form.email}
+            disabled
+            title="The email address is not editable"
+            aria-label="Email (not editable)"
+          />
 
           <div className="flex gap-3">
             <Button type="button" variant="secondary" className="flex-1" onClick={() => setShowPasswordModal(true)}>

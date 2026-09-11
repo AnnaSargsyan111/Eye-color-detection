@@ -27,6 +27,13 @@ export const SAMPLE_FAMILY_INPUT = {
 export default function PredictionResult({ familyInput = SAMPLE_FAMILY_INPUT, onStartOver, onGetBabyNames }) {
   const prediction = useMemo(() => predictEyeColor(familyInput), [familyInput])
 
+  const shownColors = new Set(prediction.topResults.map((r) => r.color))
+  const otherColors = Object.keys(prediction.probabilities)
+    .filter((c) => !shownColors.has(c))
+    .sort((a, b) => prediction.probabilities[b] - prediction.probabilities[a])
+  const topPercent = prediction.topResults.reduce((sum, r) => sum + Math.round(r.probability * 100), 0)
+  const otherPercent = Math.max(0, 100 - topPercent)
+
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-bg-page p-xl font-sans">
       <div className="flex w-full max-w-[560px] flex-col items-center gap-xl">
@@ -61,6 +68,21 @@ export default function PredictionResult({ familyInput = SAMPLE_FAMILY_INPUT, on
               </div>
             </div>
           ))}
+
+          {otherPercent > 0 && (
+            <div className="flex flex-col gap-1.5 border-t border-border-default pt-md">
+              <div className="flex items-center justify-between">
+                <span className="text-body font-medium text-text-secondary">Other colors</span>
+                <span className="text-body font-semibold text-text-secondary">{otherPercent}%</span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-bg-page">
+                <div className="h-2 rounded-full bg-unmet" style={{ width: `${otherPercent}%` }} />
+              </div>
+              <p className="text-caption text-text-secondary/80">
+                Includes {otherColors.map((c) => COLOR_LABEL[c]).join(', ')} — each less likely on its own.
+              </p>
+            </div>
+          )}
         </div>
 
         <p className="text-center text-caption text-text-secondary">

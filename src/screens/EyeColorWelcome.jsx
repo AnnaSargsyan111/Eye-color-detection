@@ -1,5 +1,8 @@
+import { Fragment } from 'react'
 import AiraSidebar from '../components/AiraSidebar.jsx'
+import MobileTopBar from '../components/MobileTopBar.jsx'
 import Button from '../components/Button.jsx'
+import { PeopleIcon } from '../components/FamilyProgressStepper.jsx'
 
 const EYES = [
   { sclera: '#6B4A34', name: 'Brown' },
@@ -37,12 +40,8 @@ function Eyeball({ sclera, index, size }) {
 export default function EyeColorWelcome({ onNavigate, onStartPrediction, userName = 'Anna Sargsyan', greeting = 'Welcome back' }) {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-bg-page font-sans">
-      <div className="hidden md:block">
-        <AiraSidebar active="eye-welcome" onNavigate={onNavigate} />
-      </div>
-      <div className="flex items-center gap-3 border-b border-border-default bg-surface px-base py-md md:hidden">
-        <span className="text-label font-semibold text-text-primary">Eye Color</span>
-      </div>
+      <AiraSidebar active="eye-welcome" onNavigate={onNavigate} />
+      <MobileTopBar title="Eye Color" />
 
       {/* Decorative dot grid, right edge — purely visual, matches the Figma reference */}
       <div
@@ -55,15 +54,11 @@ export default function EyeColorWelcome({ onNavigate, onStartPrediction, userNam
 
       <div className="flex min-h-screen flex-col items-center px-xl py-xxl md:ml-[76px]">
         <div className="flex w-full max-w-[880px] flex-col">
-          <header className="mb-xxl flex flex-wrap items-center justify-between gap-2">
-            <p className="text-caption">
-              <span className="font-medium uppercase tracking-wide text-text-secondary/70">Aira Genetics</span>
-              <span className="mx-2 text-text-secondary/40">/</span>
-              <span className="font-semibold text-text-secondary">
-                {greeting}, {userName}
-              </span>
+          <header className="mb-xxl flex flex-wrap items-center justify-between gap-2 pl-lg md:pl-xl">
+            <p className="text-caption font-semibold text-text-secondary">
+              {greeting}, {userName}
             </p>
-            <div className="flex items-center gap-2.5">
+            <div className="ml-auto flex items-center gap-2.5">
               <span className="text-caption font-medium text-text-secondary">Allele References:</span>
               {EYES.slice(0, 3).map((e) => (
                 <span key={e.name} className="h-3.5 w-3.5 rounded-full border border-black/5" style={{ backgroundColor: e.sclera }} />
@@ -72,7 +67,7 @@ export default function EyeColorWelcome({ onNavigate, onStartPrediction, userNam
           </header>
 
           <div className="flex flex-col items-center gap-md text-center">
-            <h1 className="max-w-[560px] text-h1 font-semibold leading-tight text-text-primary">
+            <h1 className="text-[28px] font-semibold leading-[36px] text-text-primary md:whitespace-nowrap md:text-[34px] md:leading-[42px]">
               Discover your baby's possible eye color
             </h1>
             <p className="max-w-[480px] text-subtitle text-text-secondary">
@@ -87,33 +82,27 @@ export default function EyeColorWelcome({ onNavigate, onStartPrediction, userNam
           </div>
 
           <div className="flex flex-col items-center gap-xl">
-            <div className="flex w-full max-w-[460px] items-start justify-between rounded-card border border-border-default bg-surface px-lg py-base">
+            <div className="flex w-full max-w-[460px] items-start rounded-card border border-border-default bg-surface px-lg py-base">
               {STEPS.map((step, i) => (
-                <div key={step.label} className="flex flex-1 items-start">
+                <Fragment key={step.label}>
+                  {/* A standalone flex-1 connector between fixed-width step columns, rather than
+                      nesting it inside a variable-width column, keeps the gaps visually even even
+                      though "Great-grandparents" is much wider than "Parents" or "Grandparents". */}
                   {i > 0 && <div className="mx-2 mt-4 h-px flex-1 bg-border-default" />}
-                  <div className="flex flex-col items-center gap-0.5">
-                    <div
-                      className={`flex h-8 w-8 items-center justify-center rounded-[10px] text-xs font-semibold ${
-                        step.active ? 'bg-brand-primary text-on-brand' : 'bg-bg-page text-text-secondary'
-                      }`}
-                    >
-                      {i + 1}
-                    </div>
+                  <div className="flex shrink-0 flex-col items-center gap-1">
+                    <PeopleIcon active={step.active} size={28} />
                     <span className={`text-[11px] font-medium ${step.active ? 'text-brand-primary' : 'text-text-secondary'}`}>
                       {step.label}
                     </span>
                     <span className="text-[10px] text-text-secondary/70">{step.caption}</span>
                   </div>
-                </div>
+                </Fragment>
               ))}
             </div>
 
-            <Button variant="primary" className="px-xxl" onClick={onStartPrediction}>
+            <Button variant="primary" className="mt-2 px-xxl" onClick={onStartPrediction}>
               Start the prediction →
             </Button>
-            <p className="-mt-2 text-caption text-text-secondary">
-              Takes approximately 2 minutes · Scientifically backed by Mendelian models
-            </p>
           </div>
         </div>
       </div>

@@ -4,9 +4,15 @@ const STEPS = [
   { key: 'great-grandparents', label: 'Great-grandparents' },
 ]
 
-function PeopleIcon({ active }) {
+export function PeopleIcon({ active, size = 24 }) {
   return (
-    <svg width="24" height="16" viewBox="0 0 24 16" fill="none" className={active ? 'text-brand-primary' : 'text-text-secondary/50'}>
+    <svg
+      width={size}
+      height={(size * 16) / 24}
+      viewBox="0 0 24 16"
+      fill="none"
+      className={active ? 'text-brand-primary' : 'text-text-secondary/50'}
+    >
       <circle cx="7" cy="5" r="3.2" stroke="currentColor" strokeWidth="1.4" />
       <path d="M1.5 15c0-3 2.5-5 5.5-5s5.5 2 5.5 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
       <circle cx="17" cy="5" r="3.2" stroke="currentColor" strokeWidth="1.4" />

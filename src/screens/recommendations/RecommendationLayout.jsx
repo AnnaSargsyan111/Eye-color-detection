@@ -1,4 +1,5 @@
 import AiraSidebar from '../../components/AiraSidebar.jsx'
+import MobileTopBar from '../../components/MobileTopBar.jsx'
 import Button from '../../components/Button.jsx'
 
 const TOTAL_STEPS = 6
@@ -16,23 +17,14 @@ export default function RecommendationLayout({
   onContinue,
   continueLabel = 'Continue →',
   continueDisabled = false,
+  footerError,
   hideFooter = false,
   children,
 }) {
   return (
     <div className="min-h-screen w-full bg-bg-page font-sans">
-      <div className="hidden md:block">
-        <AiraSidebar active="baby-names" onNavigate={onNavigate} />
-      </div>
-
-      <div className="flex items-center gap-3 border-b border-border-default bg-surface px-base py-md md:hidden">
-        {onBack && (
-          <button type="button" onClick={onBack} aria-label="Back" className="text-lg text-text-secondary">
-            ←
-          </button>
-        )}
-        <span className="text-label font-semibold text-text-primary">Baby Names</span>
-      </div>
+      <AiraSidebar active="baby-names" onNavigate={onNavigate} />
+      <MobileTopBar title="Baby Names" onBack={onBack} />
 
       <div className="flex flex-col items-center px-base py-xl md:ml-[76px] md:px-xl">
         <div className="flex w-full max-w-[560px] flex-col gap-xl pb-28 md:pb-24">
@@ -72,21 +64,29 @@ export default function RecommendationLayout({
       </div>
 
       {!hideFooter && (
-        <div className="fixed bottom-0 left-0 right-0 flex justify-center border-t border-border-default bg-surface px-base py-md md:left-[76px]">
-          <div className="flex w-full max-w-[560px] gap-3">
-            {onBack && (
-              <Button variant="secondary" className="hidden md:inline-flex" onClick={onBack}>
-                Back
+        <div className="fixed bottom-0 left-0 right-0 flex justify-center border-t border-border-default bg-surface px-base pb-lg pt-md md:left-[76px]">
+          <div className="flex w-full max-w-[560px] flex-col gap-2">
+            {footerError && <p className="text-caption text-error">{footerError}</p>}
+            <div className="flex gap-3">
+              {onBack && (
+                <Button
+                  variant="secondary"
+                  className="hidden flex-1 md:inline-flex"
+                  style={{ borderColor: '#94A3B8', borderWidth: 1.5 }}
+                  onClick={onBack}
+                >
+                  Back
+                </Button>
+              )}
+              <Button
+                variant="primary"
+                className="flex-1 disabled:cursor-not-allowed disabled:opacity-40"
+                onClick={onContinue}
+                disabled={continueDisabled}
+              >
+                {continueLabel}
               </Button>
-            )}
-            <Button
-              variant="primary"
-              className="flex-1 disabled:cursor-not-allowed disabled:opacity-40"
-              onClick={onContinue}
-              disabled={continueDisabled}
-            >
-              {continueLabel}
-            </Button>
+            </div>
           </div>
         </div>
       )}

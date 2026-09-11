@@ -32,6 +32,7 @@ export default function ForgotPassword({ onNavigateLogin, onSent }) {
       <Logo />
       <form
         onSubmit={handleSubmit}
+        noValidate
         className="flex w-full max-w-[440px] flex-col gap-xl rounded-card bg-surface p-xxxl shadow-[0_4px_24px_rgba(0,0,0,0.06)]"
       >
         <h1 className="text-h1 font-semibold text-text-primary">Reset password</h1>
@@ -43,9 +44,13 @@ export default function ForgotPassword({ onNavigateLogin, onSent }) {
         <TextField
           label="Email"
           type="email"
+          autoComplete="email"
           placeholder="you@example.com"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            setEmail(e.target.value)
+            setError((prev) => (prev ? '' : prev))
+          }}
           error={error}
         />
 

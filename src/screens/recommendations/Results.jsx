@@ -90,7 +90,7 @@ export default function Results({ onNavigate }) {
               onClick={() => setShowAll(true)}
               className="self-start text-link font-semibold text-brand-primary underline"
             >
-              View all {resolved.results.length} →
+              View all →
             </button>
           )}
 

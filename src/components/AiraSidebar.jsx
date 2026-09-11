@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useSavedNames } from '../babyNames/SavedNamesContext.jsx'
+import { useAccount } from '../account/AccountContext.jsx'
+import { useSidebarMenu } from './SidebarMenuContext.jsx'
 
 const EXPANDED_STORAGE_KEY = 'aira.sidebarExpanded'
 
@@ -80,6 +82,8 @@ function ChevronIcon({ flipped }) {
 
 export default function AiraSidebar({ active, onNavigate }) {
   const { savedNames } = useSavedNames()
+  const { fullName, initials } = useAccount()
+  const { mobileOpen, setMobileOpen } = useSidebarMenu()
   const [expanded, setExpanded] = useState(() => {
     try {
       return window.localStorage.getItem(EXPANDED_STORAGE_KEY) === 'true'
@@ -105,35 +109,52 @@ export default function AiraSidebar({ active, onNavigate }) {
     { key: 'settings', label: 'Settings', Icon: GearIcon },
   ]
 
-  function handleNavigate(key) {
+  // On mobile the rail itself is hidden — the only way in is the hamburger
+  // button in each screen's MobileTopBar, which opens this as a full drawer.
+  // "expanded" (desktop icon-rail vs. labeled drawer) and "mobileOpen"
+  // (mobile drawer open vs. closed) are independent, but both render the
+  // same wide, labeled layout, so either one being true widens the rail.
+  const wide = expanded || mobileOpen
+
+  function closeAll() {
     setExpanded(false)
+    setMobileOpen(false)
+  }
+
+  function handleNavigate(key) {
+    closeAll()
     onNavigate?.(key)
+  }
+
+  function toggleRail() {
+    if (mobileOpen) setMobileOpen(false)
+    else setExpanded((v) => !v)
   }
 
   return (
     <>
       {/* Dims the page behind the drawer while it's open; clicking it collapses back to the icon rail. */}
       {/* Invisible click-away catcher to collapse the drawer — no visual dimming, page stays exactly as-is. */}
-      {expanded && <div className="fixed inset-0 z-30" onClick={() => setExpanded(false)} aria-hidden="true" />}
+      {wide && <div className="fixed inset-0 z-30" onClick={closeAll} aria-hidden="true" />}
 
       <div
-        className={`fixed left-0 top-0 z-40 flex h-screen flex-col gap-2 border-r border-border-default bg-surface py-xl transition-[width] duration-150 ${
-          expanded ? 'w-[220px] items-stretch px-base' : 'w-[76px] items-center'
-        }`}
+        className={`fixed left-0 top-0 z-40 h-screen flex-col gap-2 border-r border-border-default bg-surface py-xl transition-[width] duration-150 ${
+          mobileOpen ? 'flex' : 'hidden md:flex'
+        } ${wide ? 'w-[220px] items-stretch px-base' : 'w-[76px] items-center'}`}
       >
-        <div className={`mb-md flex items-center ${expanded ? 'justify-between px-1' : 'flex-col gap-1'}`}>
+        <div className={`mb-md flex items-center ${wide ? 'justify-between px-1' : 'flex-col gap-1'}`}>
           <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-brand-primary text-sm font-bold text-on-brand">
             A
             <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-surface bg-success" />
           </div>
           <button
             type="button"
-            onClick={() => setExpanded((v) => !v)}
-            aria-label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
-            title={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
+            onClick={toggleRail}
+            aria-label={mobileOpen ? 'Close menu' : expanded ? 'Collapse sidebar' : 'Expand sidebar'}
+            title={mobileOpen ? 'Close menu' : expanded ? 'Collapse sidebar' : 'Expand sidebar'}
             className="flex h-6 w-6 items-center justify-center rounded-input text-text-secondary transition-colors hover:bg-bg-page"
           >
-            <ChevronIcon flipped={expanded} />
+            <ChevronIcon flipped={wide} />
           </button>
         </div>
 
@@ -145,26 +166,26 @@ export default function AiraSidebar({ active, onNavigate }) {
             aria-label={label}
             title={label}
             className={`relative flex h-10 items-center rounded-input transition-colors ${
-              expanded ? 'gap-3 px-3' : 'w-10 justify-center self-center'
+              wide ? 'gap-3 px-3' : 'w-10 justify-center self-center'
             } ${active === key ? 'bg-bg-page text-brand-primary' : 'text-text-secondary hover:bg-bg-page'}`}
           >
             {active === key && (
-              <span className={`absolute h-5 w-[3px] rounded-full bg-brand-primary ${expanded ? '-left-2' : '-left-3'}`} />
+              <span className={`absolute h-5 w-[3px] rounded-full bg-brand-primary ${wide ? '-left-2' : '-left-3'}`} />
             )}
             <span className="shrink-0">
               <Icon />
             </span>
-            {expanded && <span className="text-body font-medium">{label}</span>}
+            {wide && <span className="text-body font-medium">{label}</span>}
           </button>
         ))}
 
         <div className="flex-1" />
 
-        <div className={`flex items-center ${expanded ? 'gap-3 px-3' : 'flex-col gap-2'}`}>
+        <div className={`flex items-center ${wide ? 'gap-3 px-3' : 'flex-col gap-2'}`}>
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-unmet/40 text-xs font-bold text-text-primary">
-            AS
+            {initials}
           </div>
-          {expanded && <span className="text-caption font-medium text-text-secondary">Anna Sargsyan</span>}
+          {wide && <span className="text-caption font-medium text-text-secondary">{fullName}</span>}
         </div>
         <button
           type="button"
@@ -172,13 +193,13 @@ export default function AiraSidebar({ active, onNavigate }) {
           aria-label="Log out"
           title="Log out"
           className={`flex h-10 items-center rounded-input text-text-secondary transition-colors hover:bg-bg-page ${
-            expanded ? 'gap-3 px-3' : 'w-10 justify-center self-center'
+            wide ? 'gap-3 px-3' : 'w-10 justify-center self-center'
           }`}
         >
           <span className="shrink-0">
             <LogoutIcon />
           </span>
-          {expanded && <span className="text-body font-medium">Log out</span>}
+          {wide && <span className="text-body font-medium">Log out</span>}
         </button>
       </div>
     </>
