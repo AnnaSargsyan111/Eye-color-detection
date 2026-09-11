@@ -6,7 +6,7 @@ import Logo from '../components/Logo.jsx'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-export default function Login({ onNavigateSignup, onNavigateForgotPassword }) {
+export default function Login({ onNavigateSignup, onNavigateForgotPassword, onLoggedIn }) {
   const [form, setForm] = useState({ email: '', password: '' })
   const [errors, setErrors] = useState({})
 
@@ -24,6 +24,7 @@ export default function Login({ onNavigateSignup, onNavigateForgotPassword }) {
     // A real submit would call the auth API here and, on invalid credentials,
     // show one generic error rather than revealing which field was wrong:
     // setErrors({ password: 'Incorrect email address or password' })
+    if (Object.keys(next).length === 0) onLoggedIn?.()
   }
 
   return (

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import RecommendationLayout from './RecommendationLayout.jsx'
 import RecommendationCard from './RecommendationCard.jsx'
 import ConfirmRemoveModal from '../../components/ConfirmRemoveModal.jsx'
+import ViewAllModal from '../../components/ViewAllModal.jsx'
 import Button from '../../components/Button.jsx'
 import { useRecommendationFlow } from '../../babyNames/RecommendationContext.jsx'
 import { useSavedNames } from '../../babyNames/SavedNamesContext.jsx'
@@ -13,6 +14,9 @@ export default function Results({ onNavigate }) {
   const { preferences, outcome, setOutcome } = useRecommendationFlow()
   const { isSaved, saveName, removeName } = useSavedNames()
   const [pendingRemove, setPendingRemove] = useState(null)
+  const [showAll, setShowAll] = useState(false)
+
+  const VISIBLE_COUNT = 3
 
   // Resilience: if this screen is reached without going through Loading
   // (e.g. browser back/forward), compute the outcome on the spot instead of
@@ -66,7 +70,7 @@ export default function Results({ onNavigate }) {
             </p>
           )}
           <div className="flex flex-col gap-3">
-            {resolved.results.map((result) => {
+            {resolved.results.slice(0, VISIBLE_COUNT).map((result) => {
               const record = { name: result.name, sex: result.sex }
               return (
                 <RecommendationCard
@@ -80,6 +84,16 @@ export default function Results({ onNavigate }) {
             })}
           </div>
 
+          {resolved.results.length > VISIBLE_COUNT && (
+            <button
+              type="button"
+              onClick={() => setShowAll(true)}
+              className="self-start text-link font-semibold text-brand-primary underline"
+            >
+              View all {resolved.results.length} →
+            </button>
+          )}
+
           <div className="flex gap-3 pt-1">
             <Button variant="secondary" className="flex-1" onClick={() => onNavigate('baby-names')}>
               Start over
@@ -90,6 +104,21 @@ export default function Results({ onNavigate }) {
           </div>
         </div>
       )}
+
+      <ViewAllModal open={showAll} title={`All ${resolved.results?.length ?? 0} recommendations`} onClose={() => setShowAll(false)}>
+        {resolved.results?.map((result) => {
+          const record = { name: result.name, sex: result.sex }
+          return (
+            <RecommendationCard
+              key={result.name}
+              result={result}
+              style={preferences.style}
+              saved={isSaved(record)}
+              onToggleSave={() => toggleSave(record)}
+            />
+          )
+        })}
+      </ViewAllModal>
 
       <ConfirmRemoveModal
         open={!!pendingRemove}

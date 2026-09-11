@@ -14,7 +14,7 @@ function nameError(value) {
   return ''
 }
 
-export default function CreateAccount({ onNavigateLogin }) {
+export default function CreateAccount({ onNavigateLogin, onCreated }) {
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '' })
   const [errors, setErrors] = useState({})
 
@@ -44,6 +44,10 @@ export default function CreateAccount({ onNavigateLogin }) {
     else if (!PASSWORD_RULES.every((r) => r.test(form.password)))
       next.password = 'Password does not meet all requirements'
     setErrors(next)
+    // A real submit would create the account via an API here. There's no
+    // backend in this project, so a validation-clean submit just proceeds
+    // straight into the app, same as a real signup would after success.
+    if (Object.keys(next).length === 0) onCreated?.(`${form.firstName} ${form.lastName}`.trim())
   }
 
   return (

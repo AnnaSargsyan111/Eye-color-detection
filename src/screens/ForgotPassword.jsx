@@ -5,15 +5,26 @@ import Logo from '../components/Logo.jsx'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-export default function ForgotPassword({ onNavigateLogin }) {
+export default function ForgotPassword({ onNavigateLogin, onSent }) {
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
 
   function handleSubmit(e) {
     e.preventDefault()
-    if (!email) setError('This field is required')
-    else if (!EMAIL_RE.test(email)) setError('Enter a valid email address')
-    else setError('')
+    if (!email) {
+      setError('This field is required')
+      return
+    }
+    if (!EMAIL_RE.test(email)) {
+      setError('Enter a valid email address')
+      return
+    }
+    setError('')
+    // A real submit would call the auth API here. There's no backend in this
+    // project, so — matching the real UX either way, since the message is
+    // deliberately non-committal about whether the account exists — this
+    // just proceeds to the same "check your email" confirmation.
+    onSent?.()
   }
 
   return (

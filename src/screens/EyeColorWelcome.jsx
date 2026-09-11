@@ -34,10 +34,15 @@ function Eyeball({ sclera, index, size }) {
   )
 }
 
-export default function EyeColorWelcome({ onNavigate, onStartPrediction }) {
+export default function EyeColorWelcome({ onNavigate, onStartPrediction, userName = 'Anna Sargsyan', greeting = 'Welcome back' }) {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-bg-page font-sans">
-      <AiraSidebar active="eye-welcome" onNavigate={onNavigate} />
+      <div className="hidden md:block">
+        <AiraSidebar active="eye-welcome" onNavigate={onNavigate} />
+      </div>
+      <div className="flex items-center gap-3 border-b border-border-default bg-surface px-base py-md md:hidden">
+        <span className="text-label font-semibold text-text-primary">Eye Color</span>
+      </div>
 
       {/* Decorative dot grid, right edge — purely visual, matches the Figma reference */}
       <div
@@ -48,13 +53,15 @@ export default function EyeColorWelcome({ onNavigate, onStartPrediction }) {
         }}
       />
 
-      <div className="ml-[76px] flex min-h-screen flex-col items-center px-xl py-xxl">
+      <div className="flex min-h-screen flex-col items-center px-xl py-xxl md:ml-[76px]">
         <div className="flex w-full max-w-[880px] flex-col">
-          <header className="mb-xxl flex items-center justify-between">
+          <header className="mb-xxl flex flex-wrap items-center justify-between gap-2">
             <p className="text-caption">
               <span className="font-medium uppercase tracking-wide text-text-secondary/70">Aira Genetics</span>
               <span className="mx-2 text-text-secondary/40">/</span>
-              <span className="font-semibold text-text-secondary">Welcome back, Anna Sargsyan</span>
+              <span className="font-semibold text-text-secondary">
+                {greeting}, {userName}
+              </span>
             </p>
             <div className="flex items-center gap-2.5">
               <span className="text-caption font-medium text-text-secondary">Allele References:</span>
@@ -80,10 +87,10 @@ export default function EyeColorWelcome({ onNavigate, onStartPrediction }) {
           </div>
 
           <div className="flex flex-col items-center gap-xl">
-            <div className="flex w-full max-w-[460px] items-center justify-between rounded-card border border-border-default bg-surface px-lg py-base">
+            <div className="flex w-full max-w-[460px] items-start justify-between rounded-card border border-border-default bg-surface px-lg py-base">
               {STEPS.map((step, i) => (
-                <div key={step.label} className="flex flex-1 items-center">
-                  {i > 0 && <div className="mx-2 h-px flex-1 bg-border-default" />}
+                <div key={step.label} className="flex flex-1 items-start">
+                  {i > 0 && <div className="mx-2 mt-4 h-px flex-1 bg-border-default" />}
                   <div className="flex flex-col items-center gap-0.5">
                     <div
                       className={`flex h-8 w-8 items-center justify-center rounded-[10px] text-xs font-semibold ${

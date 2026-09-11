@@ -80,3 +80,31 @@ export const SOURCE_LABELS: Record<Source, string> = {
   armstat: 'Armenia',
   ons_england_wales: 'International',
 }
+
+export const SOURCE_ATTRIBUTION: Record<Source, string> = {
+  armstat: 'Statistical Committee of the Republic of Armenia (ArmStat)',
+  ons_england_wales: 'Office for National Statistics — Baby names in England and Wales, Open Government Licence v3.0',
+}
+
+/** Top N names by rank for source+sex, at that combination's latest available year. Empty when the source has no data yet. */
+export function getTopNamesForSource(source: Source, sex: Sex, limit = 100): BabyNameRecord[] {
+  const latestYear = getLatestYear(source, sex)
+  if (latestYear == null) return []
+  return getRecordsForSource(source)
+    .filter((r) => r.sex === sex && r.year === latestYear && r.rank <= limit)
+    .sort((a, b) => a.rank - b.rank)
+}
+
+/** Searches by substring within one source (both sexes), one entry per name+sex using its most recent year. */
+export function searchNamesForSource(source: Source, query: string, limit = 20): BabyNameRecord[] {
+  const needle = query.trim().toLowerCase()
+  if (!needle) return []
+  const latestByNameSex = new Map<string, BabyNameRecord>()
+  for (const r of getRecordsForSource(source)) {
+    if (!r.name.toLowerCase().includes(needle)) continue
+    const key = `${r.name}|${r.sex}`
+    const existing = latestByNameSex.get(key)
+    if (!existing || r.year > existing.year) latestByNameSex.set(key, r)
+  }
+  return [...latestByNameSex.values()].sort((a, b) => a.rank - b.rank).slice(0, limit)
+}
