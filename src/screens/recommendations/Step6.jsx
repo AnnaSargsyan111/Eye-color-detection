@@ -46,6 +46,7 @@ export default function Step6({ onNavigate }) {
             onChange={handleLetterInput}
             placeholder="Any letter"
             maxLength={1}
+            autoComplete="off"
             className={`w-full rounded-card border bg-surface p-lg text-body font-semibold text-text-primary outline-none transition-colors placeholder:text-text-secondary placeholder:font-semibold focus:border-[1.5px] focus:border-border-focus ${
               error ? 'border-error' : preferences.firstLetter ? 'border-brand-primary ring-1 ring-brand-primary' : 'border-border-default'
             }`}
