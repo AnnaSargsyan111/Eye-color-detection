@@ -42,7 +42,6 @@ export default function Step1({ onNavigate }) {
       }}
       onContinue={handleContinue}
       continueLabel="Continue →"
-      footerError={error}
     >
       <div className="flex flex-col gap-md">
         <span className="text-label font-medium text-text-primary">Location</span>
@@ -71,6 +70,8 @@ export default function Step1({ onNavigate }) {
           ))}
         </div>
       </div>
+
+      {error && <p className="text-caption text-error">{error}</p>}
     </RecommendationLayout>
   )
 }

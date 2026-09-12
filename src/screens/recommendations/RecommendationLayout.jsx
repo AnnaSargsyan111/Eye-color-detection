@@ -17,7 +17,6 @@ export default function RecommendationLayout({
   onContinue,
   continueLabel = 'Continue →',
   continueDisabled = false,
-  footerError,
   hideFooter = false,
   children,
 }) {
@@ -66,7 +65,6 @@ export default function RecommendationLayout({
       {!hideFooter && (
         <div className="fixed bottom-0 left-0 right-0 flex justify-center border-t border-border-default bg-surface px-base pb-lg pt-md md:left-[76px]">
           <div className="flex w-full max-w-[560px] flex-col gap-2">
-            {footerError && <p className="text-caption text-error">{footerError}</p>}
             <div className="flex gap-3">
               {onBack && (
                 <Button

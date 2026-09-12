@@ -89,14 +89,23 @@ export const ADVENTURE_ADJUSTMENTS: Record<AdventurePreference, { popularityFit:
 }
 
 /**
- * Order in which soft preferences are relaxed when fewer than this many names
- * satisfy every hard requirement. `firstLetter` is deliberately excluded —
- * it's the one filter the user typed in explicitly expecting an exact match
- * (e.g. "A" means names starting with A, never a different letter padded in
- * to reach the minimum); relaxing it silently would show unrelated names.
+ * Steps 1-6 split into two levels, and nothing here may blur them:
+ *
+ * - Hard requirements — first letter and name length — are strict
+ *   eligibility gates. A name that fails either MUST NOT appear, no matter
+ *   how well it fits everything else. They are never relaxed/dropped to pad
+ *   out the result count, so RELAXATION_ORDER is intentionally empty.
+ * - Soft preferences — popularity, style, adventure — are ranking signals
+ *   only (see scoreCandidate in recommendation.ts). They influence which
+ *   eligible names are preferred, but can never eliminate a name that passed
+ *   the hard requirements, so they never appear in passesFilters either.
+ *
+ * MIN_RESULTS_BEFORE_RELAXING is kept only as the display cap (top N by
+ * score) applied after hard filtering — not a target the engine relaxes
+ * anything to reach.
  */
 export const MIN_RESULTS_BEFORE_RELAXING = 10
-export const RELAXATION_ORDER = ['length', 'popularity'] as const
+export const RELAXATION_ORDER = [] as const
 
 /**
  * Composes the final, normalized (sums to 1) feature weights for one

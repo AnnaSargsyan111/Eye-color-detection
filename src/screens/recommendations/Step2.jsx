@@ -35,7 +35,6 @@ export default function Step2({ onNavigate }) {
       onNavigate={onNavigate}
       onBack={() => onNavigate('rec-1')}
       onContinue={handleContinue}
-      footerError={error}
     >
       <div className="flex flex-col gap-3">
         {OPTIONS.map((opt) => (
@@ -48,6 +47,8 @@ export default function Step2({ onNavigate }) {
           />
         ))}
       </div>
+
+      {error && <p className="text-caption text-error">{error}</p>}
     </RecommendationLayout>
   )
 }

@@ -15,7 +15,6 @@ import {
 import {
   computeEffectiveWeights,
   MIN_RESULTS_BEFORE_RELAXING,
-  RELAXATION_ORDER,
   TREND_WINDOW_YEARS,
   UNRANKED_SENTINEL_RANK,
 } from './weights'
@@ -99,6 +98,14 @@ interface ActiveFilters {
   popularity: boolean
 }
 
+/**
+ * Hard eligibility gate — first letter and name length ONLY. Both are
+ * mandatory-when-selected and never bypassed: a candidate that fails either
+ * is excluded outright, full stop. Popularity is deliberately NOT checked
+ * here — per the product requirement it's a ranking/scoring signal, never a
+ * pass/fail gate that could eliminate an otherwise-eligible name (see
+ * scoreCandidate for where it actually applies).
+ */
 function passesFilters(candidate: Candidate, preferences: RecommendationPreferences, active: ActiveFilters): boolean {
   if (active.firstLetter && preferences.firstLetter) {
     const locale = localeForSource(preferences.source)
@@ -106,9 +113,6 @@ function passesFilters(candidate: Candidate, preferences: RecommendationPreferen
   }
   if (active.length && preferences.length !== 'any') {
     if (lengthFitScore(candidate.name, preferences.length) < 1) return false
-  }
-  if (active.popularity && preferences.popularity !== 'any') {
-    if (popularityFitScore(candidate.historicalRank, preferences.popularity) < 1) return false
   }
   return true
 }
@@ -183,9 +187,11 @@ function explain(
 
 /**
  * Runs the full pipeline described in the product spec: candidate names for
- * source+gender+latest year -> hard filters (relaxed in RELAXATION_ORDER
- * when too restrictive) -> weighted scoring -> top 10. Never invents a name;
- * returns `insufficientData: true` when the source has no records at all.
+ * source+gender+latest year -> hard filters (first letter, name length —
+ * strict, never relaxed) -> weighted scoring by the soft preferences
+ * (popularity, style, adventure) -> top 10 by score. Never invents a name;
+ * returns `insufficientData: true` when no candidate passes the hard filters
+ * at all (including when the source has no records to begin with).
  */
 export function generateRecommendations(preferences: RecommendationPreferences): RecommendationOutcome {
   const built = buildCandidates(preferences)
@@ -200,16 +206,11 @@ export function generateRecommendations(preferences: RecommendationPreferences):
     popularity: preferences.popularity !== 'any',
   }
 
-  let filtered = candidates.filter((c) => passesFilters(c, preferences, active))
+  // Hard filtering only — first letter and length, applied together (AND),
+  // exactly as selected. Nothing here is ever relaxed/dropped to pad the
+  // result count; see RELAXATION_ORDER's doc comment in weights.ts.
+  const filtered = candidates.filter((c) => passesFilters(c, preferences, active))
   const relaxedFilters: RelaxableFilter[] = []
-
-  for (const key of RELAXATION_ORDER) {
-    if (filtered.length >= MIN_RESULTS_BEFORE_RELAXING) break
-    if (!active[key]) continue
-    active[key] = false
-    relaxedFilters.push(key)
-    filtered = candidates.filter((c) => passesFilters(c, preferences, active))
-  }
 
   // Adventure (Step 5) is optional — a user who continues without picking
   // one gets the neutral "balanced" weighting rather than a crash.

@@ -52,7 +52,7 @@ export default function Results({ onNavigate }) {
     >
       {resolved.insufficientData ? (
         <div className="flex flex-col items-center gap-4 rounded-card border border-border-default bg-surface p-xl text-center">
-          {preferences.firstLetter ? (
+          {preferences.firstLetter || preferences.length !== 'any' ? (
             <p className="text-body text-text-primary">
               Sorry, result not found.
               <br />

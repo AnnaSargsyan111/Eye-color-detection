@@ -4,7 +4,7 @@ import { ensureArmStatLoaded } from '../services/babyNames/index.js'
 const DEFAULTS = {
   // Baby Names landing pre-selects Girl/International so Explore is always
   // clickable there. Popularity/style/length stay unselected and required —
-  // Steps 2-4 validate on click (see RecommendationLayout's footerError).
+  // Steps 2-4 validate on click (each step shows its own inline error).
   // Adventure and firstLetter (Steps 5-6) also start unselected, but stay
   // optional — Continue works there with nothing picked.
   source: 'ons_england_wales',
