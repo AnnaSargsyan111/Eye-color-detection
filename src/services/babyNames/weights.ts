@@ -6,7 +6,7 @@
 
 import type { AdventurePreference, LengthPreference, PopularityTier, ScoreBreakdown, StylePreference } from './types'
 
-/** Popularity tiers, defined by current-year rank — verbatim from the Step 2 spec. */
+/** Popularity tiers, defined by historicalRank (whole-history summed count, ranked within the latest year's candidate pool — see recommendation.ts/dataSources.ts) — verbatim from the Step 2 spec. */
 export const POPULARITY_TIERS: Record<Exclude<PopularityTier, 'any'>, { min: number; max: number }> = {
   very_popular: { min: 1, max: 10 },
   popular: { min: 11, max: 50 },

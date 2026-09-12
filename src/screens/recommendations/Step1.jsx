@@ -4,10 +4,12 @@ import OptionCard from './OptionCard.jsx'
 import { useRecommendationFlow } from '../../babyNames/RecommendationContext.jsx'
 
 // Internal identifiers only — never shown in the UI. Armenia -> armstat,
-// International -> ons_england_wales, per the data-source rules.
+// International -> ons_england_wales, per the data-source rules. Order
+// matches BabyNamesLanding/BabyNames so the same choice reads the same way
+// wherever it's shown.
 const LOCATIONS = [
-  { value: 'armstat', label: 'Armenia' },
   { value: 'ons_england_wales', label: 'International' },
+  { value: 'armstat', label: 'Armenia' },
 ]
 const GENDERS = [
   { value: 'female', label: 'Girl' },

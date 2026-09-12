@@ -96,50 +96,53 @@ function buildBranch(members: Array<{ member: FamilyMember | undefined; weight: 
 export interface FamilyEvidence {
   maternal: BranchEvidence
   paternal: BranchEvidence
-  /** Combined distribution across both branches, or undefined if no branch had any known evidence. */
+  /** Great-grandparent evidence, kept separate from maternal/paternal rather
+   * than split between them — the input contract doesn't tag which side each
+   * great-grandparent belongs to, and this step is optional, so a positional
+   * guess (e.g. "first half maternal") would silently mislabel evidence
+   * whenever some slots are left blank. */
+  greatGrandparents: BranchEvidence
+  /** Combined distribution across all three groups, or undefined if none had any known evidence. */
   combinedDistribution: ProbabilityDistribution | undefined
-  /** Total evidence weight across both branches — used to weigh evidence against the smoothing prior. */
+  /** Total evidence weight across all three groups — used to weigh evidence against the smoothing prior. */
   totalEvidenceWeight: number
 }
 
 /**
- * Builds maternal and paternal branch evidence separately, then combines them.
- * Branches are combined by their own evidence weight so that a branch with
- * more known relatives has proportionally more say — but each branch's total
- * weight is a sum of intentionally small per-relative weights, so a long tail
- * of distant relatives on one side still cannot overpower the other parent.
+ * Builds maternal, paternal, and great-grandparent evidence separately, then
+ * combines them. Groups are combined by their own evidence weight so a group
+ * with more known relatives has proportionally more say — but each group's
+ * total weight is a sum of intentionally small per-relative weights, so a
+ * long tail of distant relatives can't overpower the parents/grandparents.
  */
 export function buildFamilyEvidence(input: FamilyInput): FamilyEvidence {
-  const greatGrandparents = input.greatGrandparents ?? []
-  // Great-grandparents are not tagged maternal/paternal in the input contract;
-  // split the provided list evenly between branches so neither side is
-  // arbitrarily favored. This keeps the branch separation meaningful even
-  // though the current input shape provides one flat list.
-  const maternalGGP = greatGrandparents.filter((_, i) => i % 2 === 0)
-  const paternalGGP = greatGrandparents.filter((_, i) => i % 2 === 1)
-
   const maternal = buildBranch([
     { member: input.mother, weight: EVIDENCE_WEIGHTS.parent },
     { member: input.maternalGrandmother, weight: EVIDENCE_WEIGHTS.grandparent },
     { member: input.maternalGrandfather, weight: EVIDENCE_WEIGHTS.grandparent },
-    ...maternalGGP.map((m) => ({ member: m, weight: EVIDENCE_WEIGHTS.greatGrandparent })),
   ])
 
   const paternal = buildBranch([
     { member: input.father, weight: EVIDENCE_WEIGHTS.parent },
     { member: input.paternalGrandmother, weight: EVIDENCE_WEIGHTS.grandparent },
     { member: input.paternalGrandfather, weight: EVIDENCE_WEIGHTS.grandparent },
-    ...paternalGGP.map((m) => ({ member: m, weight: EVIDENCE_WEIGHTS.greatGrandparent })),
   ])
+
+  const greatGrandparents = buildBranch(
+    (input.greatGrandparents ?? []).map((member) => ({ member, weight: EVIDENCE_WEIGHTS.greatGrandparent }))
+  )
 
   const branchObservations: WeightedObservation[] = []
   if (maternal.distribution) branchObservations.push({ distribution: maternal.distribution, weight: maternal.totalWeight })
   if (paternal.distribution) branchObservations.push({ distribution: paternal.distribution, weight: paternal.totalWeight })
+  if (greatGrandparents.distribution)
+    branchObservations.push({ distribution: greatGrandparents.distribution, weight: greatGrandparents.totalWeight })
 
   return {
     maternal,
     paternal,
+    greatGrandparents,
     combinedDistribution: combineWeightedObservations(branchObservations),
-    totalEvidenceWeight: maternal.totalWeight + paternal.totalWeight,
+    totalEvidenceWeight: maternal.totalWeight + paternal.totalWeight + greatGrandparents.totalWeight,
   }
 }

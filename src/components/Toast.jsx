@@ -1,12 +1,20 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 // Auto-dismisses after 3s, matching the Figma "Changes saved" toast spec.
 export default function Toast({ message, open, onClose }) {
+  // Callers typically pass a new onClose function identity on every render
+  // (e.g. an inline arrow function). Reading it via a ref, rather than
+  // depending on it directly, keeps the 3s timer tied to `open` alone so an
+  // unrelated parent re-render (e.g. the user typing elsewhere on the page)
+  // can't restart the countdown.
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
+
   useEffect(() => {
     if (!open) return
-    const timer = setTimeout(onClose, 3000)
+    const timer = setTimeout(() => onCloseRef.current(), 3000)
     return () => clearTimeout(timer)
-  }, [open, onClose])
+  }, [open])
 
   if (!open) return null
 
