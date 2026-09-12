@@ -86,20 +86,49 @@ export const SOURCE_ATTRIBUTION: Record<Source, string> = {
   ons_england_wales: 'Office for National Statistics — Baby names in England and Wales, Open Government Licence v3.0',
 }
 
-/** Top N names by rank for source+sex, at that combination's latest available year. Empty when the source has no data yet. */
+/**
+ * Top N names for source+sex, ranked by count summed across every year
+ * available for this source+sex (never just the latest year) — mirrors the
+ * recommendation engine's historicalRank so "Explore names" and "Get
+ * recommendations" agree on what "popular" means for the same location.
+ * Ranked only among names still present in the latest year (the same
+ * candidate pool the rest of the app already treats as "currently
+ * tracked"), so a name that vanished from the rankings entirely doesn't
+ * occupy a top-N slot ahead of one that's still active. Entirely within this
+ * one source+sex — never merged with another location. Empty when the
+ * source has no data yet.
+ */
 export function getTopNamesForSource(source: Source, sex: Sex, limit = 100): BabyNameRecord[] {
   const latestYear = getLatestYear(source, sex)
   if (latestYear == null) return []
-  return getRecordsForSource(source)
-    .filter((r) => r.sex === sex && r.year === latestYear && r.rank <= limit)
-    .sort((a, b) => a.rank - b.rank)
+
+  const records = getRecordsForSource(source).filter((r) => r.sex === sex)
+  const latestNames = new Set(records.filter((r) => r.year === latestYear).map((r) => r.name))
+
+  const historicalTotalByName = new Map<string, number>()
+  for (const r of records) {
+    if (!latestNames.has(r.name)) continue
+    historicalTotalByName.set(r.name, (historicalTotalByName.get(r.name) ?? 0) + r.count)
+  }
+
+  return [...historicalTotalByName.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([name, total], index) => ({
+      name,
+      sex,
+      source,
+      year: latestYear,
+      rank: index + 1,
+      count: total,
+    }))
 }
 
 /**
  * Searches by substring within one source, scoped to a single sex's top-N
- * list (the same list getTopNamesForSource returns) — never mixes in the
- * other sex's names, and never reaches past that list into other years or
- * lower-ranked names.
+ * list (the same list getTopNamesForSource returns, now ranked by historical
+ * total) — never mixes in the other sex's names, and never reaches past that
+ * list into lower-ranked names.
  */
 export function searchNamesForSource(source: Source, sex: Sex, query: string, topLimit = 100): BabyNameRecord[] {
   const needle = query.trim().toLowerCase()
