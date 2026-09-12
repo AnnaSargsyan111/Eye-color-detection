@@ -184,7 +184,9 @@ export function generateRecommendations(preferences: RecommendationPreferences):
     filtered = candidates.filter((c) => passesFilters(c, preferences, active))
   }
 
-  const weights = computeEffectiveWeights(preferences.style, preferences.adventure)
+  // Adventure (Step 5) is optional — a user who continues without picking
+  // one gets the neutral "balanced" weighting rather than a crash.
+  const weights = computeEffectiveWeights(preferences.style, preferences.adventure ?? 'balanced')
   const scored = filtered
     .map((c) => scoreCandidate(c, preferences, active, weights))
     .sort((a, b) => b.total - a.total)

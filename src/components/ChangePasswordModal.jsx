@@ -2,20 +2,14 @@ import { useEffect, useState } from 'react'
 import PasswordField from './PasswordField.jsx'
 import PasswordRequirements, { PASSWORD_RULES } from './PasswordRequirements.jsx'
 import Button from './Button.jsx'
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock.js'
 
 export default function ChangePasswordModal({ open, onCancel, onSaved }) {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [errors, setErrors] = useState({})
 
-  useEffect(() => {
-    if (!open) return
-    const original = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = original
-    }
-  }, [open])
+  useBodyScrollLock(open)
 
   useEffect(() => {
     if (open) {

@@ -39,7 +39,7 @@ function Eyeball({ sclera, index, size }) {
 
 export default function EyeColorWelcome({ onNavigate, onStartPrediction, userName = 'Anna Sargsyan', greeting = 'Welcome back' }) {
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-bg-page font-sans">
+    <div className="relative min-h-screen w-full bg-bg-page font-sans">
       <AiraSidebar active="eye-welcome" onNavigate={onNavigate} />
       <MobileTopBar title="Eye Color" />
 

@@ -1,16 +1,9 @@
-import { useEffect } from 'react'
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock.js'
 
 // Shared "View all" modal shell — header with title + close, scrollable body.
 // Matches the ConfirmRemoveModal conventions (backdrop-click closes, body scroll-locked).
 export default function ViewAllModal({ open, title, onClose, headerAction, children }) {
-  useEffect(() => {
-    if (!open) return
-    const original = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = original
-    }
-  }, [open])
+  useBodyScrollLock(open)
 
   if (!open) return null
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSavedNames } from '../babyNames/SavedNamesContext.jsx'
 import { useAccount } from '../account/AccountContext.jsx'
 import { useSidebarMenu } from './SidebarMenuContext.jsx'
@@ -84,6 +84,7 @@ export default function AiraSidebar({ active, onNavigate }) {
   const { savedNames } = useSavedNames()
   const { fullName, initials } = useAccount()
   const { mobileOpen, setMobileOpen } = useSidebarMenu()
+  const railRef = useRef(null)
   const [expanded, setExpanded] = useState(() => {
     try {
       return window.localStorage.getItem(EXPANDED_STORAGE_KEY) === 'true'
@@ -121,6 +122,23 @@ export default function AiraSidebar({ active, onNavigate }) {
     setMobileOpen(false)
   }
 
+  // Click-outside-to-close, via a document listener rather than a full-
+  // viewport overlay <div>. A fixed inset-0 overlay sitting over the whole
+  // page — even with no handlers of its own beyond onClick — was found to
+  // swallow wheel/trackpad scroll input in some browsers, silently breaking
+  // page scrolling on every screen for as long as the sidebar stayed
+  // expanded (which persists across reloads on desktop). A listener has no
+  // hit-testable element to block anything with.
+  useEffect(() => {
+    if (!wide) return
+    function handlePointerDown(e) {
+      if (!railRef.current?.contains(e.target)) closeAll()
+    }
+    document.addEventListener('mousedown', handlePointerDown)
+    return () => document.removeEventListener('mousedown', handlePointerDown)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wide])
+
   function handleNavigate(key) {
     closeAll()
     onNavigate?.(key)
@@ -132,16 +150,12 @@ export default function AiraSidebar({ active, onNavigate }) {
   }
 
   return (
-    <>
-      {/* Dims the page behind the drawer while it's open; clicking it collapses back to the icon rail. */}
-      {/* Invisible click-away catcher to collapse the drawer — no visual dimming, page stays exactly as-is. */}
-      {wide && <div className="fixed inset-0 z-30" onClick={closeAll} aria-hidden="true" />}
-
-      <div
-        className={`fixed left-0 top-0 z-40 h-screen flex-col gap-2 border-r border-border-default bg-surface py-xl transition-[width] duration-150 ${
-          mobileOpen ? 'flex' : 'hidden md:flex'
-        } ${wide ? 'w-[220px] items-stretch px-base' : 'w-[76px] items-center'}`}
-      >
+    <div
+      ref={railRef}
+      className={`fixed left-0 top-0 z-40 h-screen flex-col gap-2 border-r border-border-default bg-surface py-xl transition-[width] duration-150 ${
+        mobileOpen ? 'flex' : 'hidden md:flex'
+      } ${wide ? 'w-[220px] items-stretch px-base' : 'w-[76px] items-center'}`}
+    >
         <div className={`mb-md flex items-center ${wide ? 'justify-between px-1' : 'flex-col gap-1'}`}>
           <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-brand-primary text-sm font-bold text-on-brand">
             A
@@ -202,6 +216,5 @@ export default function AiraSidebar({ active, onNavigate }) {
           {wide && <span className="text-body font-medium">Log out</span>}
         </button>
       </div>
-    </>
   )
 }

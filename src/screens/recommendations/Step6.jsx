@@ -4,7 +4,9 @@ import { useRecommendationFlow } from '../../babyNames/RecommendationContext.jsx
 import { getAvailableFirstLetters } from '../../services/babyNames/index.js'
 
 const LATIN_LETTER_RE = /^[A-Za-z]$/
-const MAX_VISIBLE_LETTERS = 10
+// One slot short of a full row so the trailing "more" indicator — now boxed
+// the same size as a letter — still fits on the same line instead of wrapping.
+const MAX_VISIBLE_LETTERS = 9
 
 export default function Step6({ onNavigate }) {
   const { preferences, update } = useRecommendationFlow()
@@ -74,9 +76,9 @@ export default function Step6({ onNavigate }) {
             {hasMoreLetters && (
               <span
                 aria-hidden="true"
-                className="flex h-11 w-6 shrink-0 items-center justify-center text-h1 font-semibold leading-none text-text-secondary"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-input border border-border-default bg-surface text-body font-semibold tracking-tighter text-text-secondary"
               >
-                •
+                •••
               </span>
             )}
           </div>

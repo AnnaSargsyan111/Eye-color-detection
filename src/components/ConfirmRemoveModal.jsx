@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock.js'
 import Button from './Button.jsx'
 
 export default function ConfirmRemoveModal({
@@ -10,14 +10,7 @@ export default function ConfirmRemoveModal({
   confirmLabel = 'Remove',
 }) {
   // Prevent the underlying page from scrolling while the modal is open.
-  useEffect(() => {
-    if (!open) return
-    const original = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = original
-    }
-  }, [open])
+  useBodyScrollLock(open)
 
   if (!open) return null
 
