@@ -4,10 +4,10 @@ import OptionCard from './OptionCard.jsx'
 import { useRecommendationFlow } from '../../babyNames/RecommendationContext.jsx'
 
 const OPTIONS = [
-  { value: 'very_popular', title: 'Very popular', description: 'Current-year rank 1–10.' },
-  { value: 'popular', title: 'Popular', description: 'Current-year rank 11–50.' },
-  { value: 'less_common', title: 'Less common', description: 'Current-year rank 51–200.' },
-  { value: 'rare', title: 'Rare', description: 'Current-year rank greater than 200.' },
+  { value: 'very_popular', title: 'Very popular', description: null },
+  { value: 'popular', title: 'Popular', description: null },
+  { value: 'less_common', title: 'Less common', description: null },
+  { value: 'rare', title: 'Rare', description: null },
   { value: 'any', title: 'No preference', description: null },
 ]
 

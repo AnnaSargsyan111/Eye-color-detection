@@ -52,12 +52,22 @@ export default function Results({ onNavigate }) {
     >
       {resolved.insufficientData ? (
         <div className="flex flex-col items-center gap-4 rounded-card border border-border-default bg-surface p-xl text-center">
-          <p className="text-body text-text-primary">
-            We don't have enough matching names yet for these preferences.
-          </p>
-          <p className="text-caption text-text-secondary">
-            Try widening your popularity, length, or letter preference — or check back once more data is available for this location.
-          </p>
+          {preferences.firstLetter ? (
+            <p className="text-body text-text-primary">
+              Sorry, result not found.
+              <br />
+              Try adjust your filters.
+            </p>
+          ) : (
+            <>
+              <p className="text-body text-text-primary">
+                We don't have enough matching names yet for these preferences.
+              </p>
+              <p className="text-caption text-text-secondary">
+                Try widening your popularity, length, or letter preference — or check back once more data is available for this location.
+              </p>
+            </>
+          )}
           <Button variant="primary" onClick={() => onNavigate('rec-1')}>
             Adjust preferences
           </Button>

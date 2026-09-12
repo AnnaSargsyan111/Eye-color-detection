@@ -34,6 +34,9 @@ interface Candidate {
   latest: BabyNameRecord
   window: YearRank[]
   realYearsPresent: number
+  /** Rank by summed count across every year available for this source+gender
+   * (never just the latest year) — see buildCandidates. */
+  historicalRank: number
 }
 
 function buildWindow(records: BabyNameRecord[], name: string, latestYear: number): { window: YearRank[]; realYearsPresent: number } {
@@ -53,15 +56,38 @@ function buildWindow(records: BabyNameRecord[], name: string, latestYear: number
 }
 
 function buildCandidates(preferences: RecommendationPreferences): { candidates: Candidate[]; latestYear: number } | null {
+  // `records` is already scoped to exactly one source+gender — the sole
+  // dataset for this location — before any historical/ranking math runs, so
+  // that math can never mix in another location's names or totals.
   const records = getRecordsForSource(preferences.source).filter((r) => r.sex === preferences.gender)
   if (records.length === 0) return null
 
   const latestYear = Math.max(...records.map((r) => r.year))
   const latestRecords = records.filter((r) => r.year === latestYear)
 
+  // "How popular should the name be?" (Step 2) reflects the name's whole
+  // tracked history for this source+gender, not just the latest year: sum
+  // each name's count across every available year, then rank names against
+  // each other by that historical total. Ranked only among latestRecords'
+  // own names (the same candidate pool the rest of the pipeline already
+  // uses) — a name that dropped out of the tracked ranking entirely by the
+  // latest year isn't a candidate anyway, so it shouldn't consume a top-rank
+  // slot and squeeze out a name that IS still active. All within this same
+  // source+gender dataset, per-location, never merged with another.
+  const historicalTotalByName = new Map<string, number>()
+  for (const latest of latestRecords) {
+    const total = records.filter((r) => r.name === latest.name).reduce((sum, r) => sum + r.count, 0)
+    historicalTotalByName.set(latest.name, total)
+  }
+  const historicalRankByName = new Map<string, number>()
+  ;[...historicalTotalByName.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .forEach(([name], index) => historicalRankByName.set(name, index + 1))
+
   const candidates = latestRecords.map((latest) => {
     const { window, realYearsPresent } = buildWindow(records, latest.name, latestYear)
-    return { name: latest.name, latest, window, realYearsPresent }
+    const historicalRank = historicalRankByName.get(latest.name) ?? latest.rank
+    return { name: latest.name, latest, window, realYearsPresent, historicalRank }
   })
 
   return { candidates, latestYear }
@@ -82,7 +108,7 @@ function passesFilters(candidate: Candidate, preferences: RecommendationPreferen
     if (lengthFitScore(candidate.name, preferences.length) < 1) return false
   }
   if (active.popularity && preferences.popularity !== 'any') {
-    if (popularityFitScore(candidate.latest.rank, preferences.popularity) < 1) return false
+    if (popularityFitScore(candidate.historicalRank, preferences.popularity) < 1) return false
   }
   return true
 }
@@ -94,7 +120,7 @@ function scoreCandidate(
   weights: ScoreBreakdown
 ): { result: RecommendationResult; total: number } {
   const breakdown: ScoreBreakdown = {
-    popularityFit: popularityFitScore(candidate.latest.rank, active.popularity ? preferences.popularity : 'any'),
+    popularityFit: popularityFitScore(candidate.historicalRank, active.popularity ? preferences.popularity : 'any'),
     trend: trendScore(candidate.window),
     stability: stabilityScore(candidate.window, candidate.latest.rank),
     distinctiveness: distinctivenessScore(candidate.latest.rank, candidate.realYearsPresent),
@@ -121,6 +147,7 @@ function scoreCandidate(
       latestYear: candidate.latest.year,
       latestRank: candidate.latest.rank,
       latestCount: candidate.latest.count,
+      historicalRank: candidate.historicalRank,
       score: total,
       breakdown,
       explanation,

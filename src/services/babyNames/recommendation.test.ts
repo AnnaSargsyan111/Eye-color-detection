@@ -63,27 +63,32 @@ describe('generateRecommendations — ons_england_wales, real data', () => {
   })
 
   describe('popularity tiers', () => {
-    it('very_popular results all rank within 1-10 when unrelaxed', () => {
+    // The tier reflects the name's whole tracked history for this
+    // source+gender (summed count across every available year, ranked
+    // within that same dataset) rather than only the latest year, so these
+    // check historicalRank, not latestRank — a name can rank differently in
+    // one year than across its full history.
+    it('very_popular results all rank within 1-10 (historically) when unrelaxed', () => {
       const outcome = generateRecommendations(prefs({ gender: 'female', popularity: 'very_popular' }))
       expect(outcome.relaxedFilters).not.toContain('popularity')
       for (const r of outcome.results) {
-        expect(r.latestRank).toBeGreaterThanOrEqual(POPULARITY_TIERS.very_popular.min)
-        expect(r.latestRank).toBeLessThanOrEqual(POPULARITY_TIERS.very_popular.max)
+        expect(r.historicalRank).toBeGreaterThanOrEqual(POPULARITY_TIERS.very_popular.min)
+        expect(r.historicalRank).toBeLessThanOrEqual(POPULARITY_TIERS.very_popular.max)
       }
     })
 
-    it('popular results all rank within 11-50 when unrelaxed', () => {
+    it('popular results all rank within 11-50 (historically) when unrelaxed', () => {
       const outcome = generateRecommendations(prefs({ gender: 'male', popularity: 'popular' }))
       for (const r of outcome.results) {
-        expect(r.latestRank).toBeGreaterThanOrEqual(11)
-        expect(r.latestRank).toBeLessThanOrEqual(50)
+        expect(r.historicalRank).toBeGreaterThanOrEqual(11)
+        expect(r.historicalRank).toBeLessThanOrEqual(50)
       }
     })
 
-    it('less_common results all rank within 51-200 when unrelaxed', () => {
+    it('less_common results all rank within 51-200 (historically) when unrelaxed', () => {
       const outcome = generateRecommendations(prefs({ gender: 'female', popularity: 'less_common' }))
       for (const r of outcome.results) {
-        expect(r.latestRank).toBeGreaterThanOrEqual(51)
+        expect(r.historicalRank).toBeGreaterThanOrEqual(51)
       }
     })
 

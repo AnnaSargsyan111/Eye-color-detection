@@ -53,6 +53,8 @@ export interface RecommendationResult {
   latestYear: number
   latestRank: number
   latestCount: number
+  /** Rank by summed count across every year available for this source+gender — what the Step 2 popularity tier is actually filtered/scored against, not just the latest year. */
+  historicalRank: number
   score: number
   breakdown: ScoreBreakdown
   explanation: string

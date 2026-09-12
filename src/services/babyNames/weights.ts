@@ -88,9 +88,15 @@ export const ADVENTURE_ADJUSTMENTS: Record<AdventurePreference, { popularityFit:
   unexpected: { popularityFit: -0.1, distinctiveness: 0.1 },
 }
 
-/** Order in which soft preferences are relaxed when fewer than this many names satisfy every hard requirement. */
+/**
+ * Order in which soft preferences are relaxed when fewer than this many names
+ * satisfy every hard requirement. `firstLetter` is deliberately excluded —
+ * it's the one filter the user typed in explicitly expecting an exact match
+ * (e.g. "A" means names starting with A, never a different letter padded in
+ * to reach the minimum); relaxing it silently would show unrelated names.
+ */
 export const MIN_RESULTS_BEFORE_RELAXING = 10
-export const RELAXATION_ORDER = ['firstLetter', 'length', 'popularity'] as const
+export const RELAXATION_ORDER = ['length', 'popularity'] as const
 
 /**
  * Composes the final, normalized (sums to 1) feature weights for one
