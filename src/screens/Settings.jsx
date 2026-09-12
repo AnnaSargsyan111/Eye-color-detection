@@ -77,11 +77,11 @@ export default function Settings({ onNavigate }) {
             aria-label="Email (not editable)"
           />
 
-          <div className="flex gap-3">
-            <Button type="button" variant="secondary" className="flex-1" onClick={() => setShowPasswordModal(true)}>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button type="button" variant="secondary" className="sm:flex-1" onClick={() => setShowPasswordModal(true)}>
               Change Password
             </Button>
-            <Button type="submit" variant="primary" className="flex-1">
+            <Button type="submit" variant="primary" className="sm:flex-1">
               Save changes
             </Button>
           </div>

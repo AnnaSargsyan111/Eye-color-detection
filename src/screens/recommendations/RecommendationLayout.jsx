@@ -67,14 +67,23 @@ export default function RecommendationLayout({
           <div className="flex w-full max-w-[560px] flex-col gap-2">
             <div className="flex gap-3">
               {onBack && (
-                <Button
-                  variant="secondary"
-                  className="hidden flex-1 md:inline-flex"
-                  style={{ borderColor: '#94A3B8', borderWidth: 1.5 }}
-                  onClick={onBack}
-                >
-                  Back
-                </Button>
+                // Wrapping in a plain div (rather than putting hidden/md:flex
+                // directly on Button) sidesteps a Tailwind ordering quirk
+                // where Button's own base `inline-flex` class wins over a
+                // `hidden` override passed via className, regardless of
+                // breakpoint — which silently kept this desktop-only Back
+                // button visible on mobile too, duplicating MobileTopBar's
+                // own back arrow.
+                <div className="hidden flex-1 md:flex">
+                  <Button
+                    variant="secondary"
+                    className="w-full"
+                    style={{ borderColor: '#94A3B8', borderWidth: 1.5 }}
+                    onClick={onBack}
+                  >
+                    Back
+                  </Button>
+                </div>
               )}
               <Button
                 variant="primary"

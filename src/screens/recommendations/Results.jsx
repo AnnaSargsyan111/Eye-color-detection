@@ -114,13 +114,13 @@ export default function Results({ onNavigate }) {
             </button>
           )}
 
-          <div className="flex gap-3 pt-1">
-            <Button variant="secondary" className="flex-1" onClick={() => onNavigate('baby-names')}>
+          <div className="flex flex-col gap-3 pt-1 sm:flex-row">
+            <Button variant="secondary" className="sm:flex-1" onClick={() => onNavigate('baby-names')}>
               Start over
             </Button>
             <Button
               variant="primary"
-              className="flex-1"
+              className="sm:flex-1"
               onClick={() => {
                 // Same as "Adjust preferences": starting another recommendation
                 // run from here must not carry over this run's answers.

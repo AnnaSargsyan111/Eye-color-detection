@@ -91,11 +91,11 @@ export default function PredictionResult({ familyInput = SAMPLE_FAMILY_INPUT, on
           a genetic or medical prediction.
         </p>
 
-        <div className="flex w-full gap-3">
-          <Button variant="secondary" className="flex-1" onClick={onStartOver}>
+        <div className="flex w-full flex-col gap-3 sm:flex-row">
+          <Button variant="secondary" className="sm:flex-1" onClick={onStartOver}>
             Start over
           </Button>
-          <Button variant="primary" className="flex-1" onClick={onGetBabyNames}>
+          <Button variant="primary" className="sm:flex-1" onClick={onGetBabyNames}>
             Get Baby Names →
           </Button>
         </div>

@@ -59,7 +59,7 @@ export default function BabyNamesLanding({ onNavigate }) {
                 </div>
               </div>
 
-              <div className="ml-lg flex flex-col gap-2">
+              <div className="flex flex-col gap-2 sm:ml-lg">
                 <span className="text-caption font-medium text-text-secondary">Location</span>
                 <div className="flex gap-2">
                   {LOCATIONS.map((loc) => (
