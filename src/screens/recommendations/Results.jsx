@@ -11,7 +11,7 @@ import { generateRecommendations } from '../../services/babyNames/index.js'
 const RELAXED_LABEL = { firstLetter: 'first letter', length: 'name length', popularity: 'popularity' }
 
 export default function Results({ onNavigate }) {
-  const { preferences, outcome, setOutcome } = useRecommendationFlow()
+  const { preferences, outcome, setOutcome, resetFlow } = useRecommendationFlow()
   const { isSaved, saveName, removeName } = useSavedNames()
   const [pendingRemove, setPendingRemove] = useState(null)
   const [showAll, setShowAll] = useState(false)
@@ -68,7 +68,17 @@ export default function Results({ onNavigate }) {
               </p>
             </>
           )}
-          <Button variant="primary" onClick={() => onNavigate('rec-1')}>
+          <Button
+            variant="primary"
+            onClick={() => {
+              // Re-entering the wizard from a "no results" state must start
+              // completely clean — every step should look unanswered, exactly
+              // like a first-time run, so nothing from the attempt that just
+              // failed can leak into the next one.
+              resetFlow()
+              onNavigate('rec-1')
+            }}
+          >
             Adjust preferences
           </Button>
         </div>
@@ -108,7 +118,16 @@ export default function Results({ onNavigate }) {
             <Button variant="secondary" className="flex-1" onClick={() => onNavigate('baby-names')}>
               Start over
             </Button>
-            <Button variant="primary" className="flex-1" onClick={() => onNavigate('rec-1')}>
+            <Button
+              variant="primary"
+              className="flex-1"
+              onClick={() => {
+                // Same as "Adjust preferences": starting another recommendation
+                // run from here must not carry over this run's answers.
+                resetFlow()
+                onNavigate('rec-1')
+              }}
+            >
               Get recommendations
             </Button>
           </div>
