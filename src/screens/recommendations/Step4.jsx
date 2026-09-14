@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import RecommendationLayout from './RecommendationLayout.jsx'
 import OptionCard from './OptionCard.jsx'
 import { useRecommendationFlow } from '../../babyNames/RecommendationContext.jsx'
@@ -12,17 +11,19 @@ const OPTIONS = [
 
 export default function Step4({ onNavigate }) {
   const { preferences, update } = useRecommendationFlow()
-  const [error, setError] = useState('')
 
   function select(value) {
     update({ length: value })
-    setError('')
   }
 
   function handleContinue() {
+    // Step 4 is optional: skipping it must behave identically to explicitly
+    // choosing "No preference" (length: 'any') — a pure neutral ranking
+    // signal downstream, never a filter and never an auto-selected default
+    // shown in the UI. Never leave preferences.length unset (null), since
+    // every consumer past this screen expects a real LengthPreference value.
     if (!preferences.length) {
-      setError('Select an option to continue')
-      return
+      update({ length: 'any' })
     }
     onNavigate('rec-5')
   }
@@ -46,8 +47,6 @@ export default function Step4({ onNavigate }) {
           />
         ))}
       </div>
-
-      {error && <p className="text-caption text-error">{error}</p>}
     </RecommendationLayout>
   )
 }
