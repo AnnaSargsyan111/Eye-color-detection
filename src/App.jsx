@@ -5,6 +5,7 @@ import ForgotPassword from './screens/ForgotPassword.jsx'
 import CheckYourEmail from './screens/CheckYourEmail.jsx'
 import ResetPassword from './screens/ResetPassword.jsx'
 import PasswordResetSuccess from './screens/PasswordResetSuccess.jsx'
+import AiraSplash from './screens/AiraSplash.jsx'
 import EyeColorWelcome from './screens/EyeColorWelcome.jsx'
 import EyeColorParents from './screens/eyeColor/EyeColorParents.jsx'
 import EyeColorGrandparents from './screens/eyeColor/EyeColorGrandparents.jsx'
@@ -72,12 +73,12 @@ function AppScreens() {
   function handleCreated(account) {
     if (account) setAccount(account)
     setGreeting('Welcome')
-    navigate('eye-welcome')
+    navigate('splash')
   }
 
   function handleLoggedIn() {
     setGreeting('Welcome back')
-    navigate('eye-welcome')
+    navigate('splash')
   }
 
   function handleStartPrediction() {
@@ -89,6 +90,9 @@ function AppScreens() {
     navigate('prediction-result')
   }
 
+  if (screen === 'splash') {
+    return <AiraSplash onDone={() => navigate('eye-welcome')} />
+  }
   if (screen === 'eye-welcome') {
     return (
       <EyeColorWelcome onNavigate={navigate} onStartPrediction={handleStartPrediction} userName={userName} greeting={greeting} />
